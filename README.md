@@ -25,7 +25,7 @@ This is a browser-based tool designed to help researchers efficiently complete t
 ### Step 2: Install the Covidence Study Navigator Script
 
 1. Download the script file:  
-   [covidence_study_navigator_with_done_label.user.js](./covidence_study_navigator_with_done_label.user.js)
+   [covidence_study_navigator_with_done_label.user.js](./covidence_study_navigator.js)
 2. Open the file in your browser
 3. Tampermonkey will display a prompt to install the script
 4. Click "Install"
