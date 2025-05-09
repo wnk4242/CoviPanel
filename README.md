@@ -4,15 +4,13 @@ This is a browser-based tool designed to help researchers efficiently complete t
 
 ## Features
 
-- Allows you to paste a list of study numbers copied from Excel or other sources
-- Navigates forward and backward through the list
-- Inserts the current study number into the Covidence search bar
-- Provides a button to simulate pressing Enter
-- Displays a progress bar and a numerical indicator (e.g., "3 of 50")
-- Automatically records Yes/No/Maybe decisions
-- Marks studies as "Done" in the panel when completed
-- Enables one-click export of your recorded decisions to a CSV file
-- Saves your place in the list even if the page is refreshed
+- Paste a custom list of study numbers (e.g., from Excel) directly into a panel embedded in the Covidence interface.
+- Automatically navigate to each study in the list.
+- Make Yes/No/Maybe decisions using built-in buttons on the panel.
+- Record and log decisions in real time.
+- Export screening decisions as a CSV file for tracking or auditing.
+- Click on logged study IDs in a summary section to jump directly to a specific study.
+
 
 ## Installation Instructions (Chrome)
 
