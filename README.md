@@ -11,7 +11,7 @@ This is a browser-based tool designed to help researchers efficiently complete t
 - Export screening decisions as a CSV file for tracking or auditing.
 - Click on logged study IDs in a summary section to jump directly to a specific study.
 
-![UI](CSN_panel.png)
+![UI](CSN_UI.png)
 
 ## Installation Instructions (Chrome)
 
