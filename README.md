@@ -13,38 +13,45 @@ This is a browser-based tool designed to help researchers efficiently complete t
 
 ![UI](CSN_UI.png)
 
-## Installation Instructions (Chrome)
 
-### Step 1: Install the Tampermonkey Extension
+## How to Install Tampermonkey and Add This Script
 
-1. Visit [https://www.tampermonkey.net/](https://www.tampermonkey.net/)
-2. Select the Chrome version and install it from the Chrome Web Store
-3. After installation, you should see the Tampermonkey icon in your browser toolbar
+### ✅ Step 1: Add Tampermonkey to Chrome  
+1. Go to the [Chrome Web Store](https://chrome.google.com/webstore/) and search for **Tampermonkey**.
 
-### Step 2: Install the Covidence Study Navigator Script
+![Step 1.1](installation/install_step1.1.png)
 
-1. Download the script file:  
-   [covidence_study_navigator_with_done_label.user.js](./covidence_study_navigator.js)
-2. Open the file in your browser
-3. Tampermonkey will display a prompt to install the script
-4. Click "Install"
+2. Click **Add to Chrome** on the extension page.
 
-## How to Use in Covidence
+3. Alternatively, visit [tampermonkey.net](https://www.tampermonkey.net/) and click **Get from Store**.
 
-1. Navigate to your Covidence screening page
-2. A floating panel will appear in the upper-left corner of the screen
+![Step 1](installation/install_step1.png)  
+---
 
-   [Insert screenshot of the panel here]
+### ✅ Step 2: Pin Tampermonkey to Your Toolbar  
+![Step 1.2](installation/install_step1.2.png)  
 
-3. Paste your list of study numbers into the input box. You can copy numbers from Excel even if they are listed one per row.
-4. Click "Start" to begin screening
-5. For each study:
-   - Click "Enter" to search
-   - Review the paper
-   - Click Yes, No, or Maybe
-   - The current study will be marked "Done"
-   - Click "Next" to continue to the next study
-   - Use "Back" to return to the previous study
-6. When ready, click "Export CSV" to download a file containing your decisions:
+1. Click the puzzle piece icon (Extensions) in the top-right of Chrome.  
+2. Find **Tampermonkey** and click the pin icon to keep it visible in your toolbar.
 
-   Example:
+---
+
+### ✅ Step 3: Open the Tampermonkey Dashboard  
+![Step 2](installation/install_step2.png)  
+
+1. Click the **Tampermonkey** icon in your toolbar.  
+2. Choose **Dashboard** from the dropdown menu.
+
+---
+
+### ✅ Step 4: Create a New Userscript  
+![Step 2.1](installation/install_step2.1.png)  
+
+1. In the dashboard, click the **➕ (plus)** icon at the top right to create a new script.  
+2. Paste the full userscript into the code editor and click **File > Save**.
+
+---
+
+Once saved, the script will automatically run whenever you visit Covidence.  
+
+
