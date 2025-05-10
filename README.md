@@ -1,6 +1,7 @@
 # Covidence Study Navigator (Tampermonkey Script)
 
-This is a browser-based tool designed to help researchers efficiently complete their screening tasks on [Covidence](https://www.covidence.org/). When conducting a systematic review, you may be randomly assigned hundreds of studies. Covidence requires you to manually search for each study using a numeric label (e.g., #2175), screen the record, and record your decision. This tool automates and organizes that process within the Covidence interface.
+This Tampermonkey userscript is designed to streamline the screening process in [Covidence](https://www.covidence.org/), a tool commonly used for literature and systematic reviews. In large reviews, researchers are often assigned to screen a range or a randomized set of studies. Covidence allows users to search for one study at a time, but doesn't support easy navigation through a custom list of study IDs, especially when the study IDs are non-consecutive, or they are not located at the top of the study list.
+
 
 ## Features
 
