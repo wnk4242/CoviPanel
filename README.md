@@ -5,7 +5,7 @@ This Tampermonkey userscript is designed to streamline the screening process in 
 
 ## Features
 The script helps users:
-- Paste a custom list of study numbers (e.g., from Excel) directly into a panel embedded in the Covidence interface.
+- Embedded draggable panel in the Covidence UI.
 - Automatically navigate to each study in the list.
 - Make Yes/No/Maybe decisions using built-in buttons on the panel.
 - Record and log decisions in real time.
