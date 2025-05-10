@@ -12,6 +12,10 @@ The script helps users:
 - Export screening decisions as a CSV file for tracking or auditing.
 - Click on logged study IDs in a summary section to jump directly to a specific study.
 
+#### Front panel:
+![UIx](CSN_UIx.png)
+
+#### Main panel:
 ![UI](CSN_UI.png)
 
 
