@@ -13,10 +13,10 @@ The script helps users:
 - Click on logged study IDs in a summary section to jump directly to a specific study.
 
 #### Front panel:
-![UIx](CSN_UIx.png)
+![UIx](ui/CSN_UIx.png)
 
 #### Main panel:
-![UIxx](CSN_UIxx.png)
+![UIxx](ui/CSN_UIxx.png)
 
 
 ## How to Install Tampermonkey and Add This Script
