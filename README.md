@@ -16,7 +16,7 @@ The script helps users:
 ![UIx](CSN_UIx.png)
 
 #### Main panel:
-![UI](CSN_UI.png)
+![UIxx](CSN_UIxx.png)
 
 
 ## How to Install Tampermonkey and Add This Script
