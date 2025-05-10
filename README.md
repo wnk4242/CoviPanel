@@ -48,7 +48,7 @@ This is a browser-based tool designed to help researchers efficiently complete t
 ![Step 2.1](installation/install_step2.1.png)  
 
 1. In the dashboard, click the **➕ (plus)** icon at the top right to create a new script.  
-2. Paste the full userscript into the code editor and click **File > Save**.
+2. Delete the default code entirely in the code editor and paste the code in **Covidence Study Navigator.user.js** into the code editor and click **File > Save**.
 
 ---
 
