@@ -49,6 +49,7 @@ This is a browser-based tool designed to help researchers efficiently complete t
 
 1. In the dashboard, click the **➕ (plus)** icon at the top right to create a new script.  
 2. Delete the default code entirely in the code editor and paste the code in **Covidence Study Navigator.user.js** into the code editor and click **File > Save**.
-3. Once saved, the script will automatically run whenever you visit Covidence.  
+3. Once saved, the script will automatically run whenever you visit Covidence. You should see a red badge on the Tampermonkey icon showing that your userscript is active and running on the page.
+
 ![Step 3](installation/install_step3.png)  
 
