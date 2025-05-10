@@ -58,3 +58,56 @@ The script helps users:
 
 ![Step 3](installation/install_step3.png)  
 
+
+
+
+
+
+## How to Use the Covidence Study Navigator Userscript
+
+
+
+### ✅ Step 1: Export your assigned study list from Covidence  
+
+
+1. In Covidence, go to your review’s **Export** tab.
+2. Under **References**, select:
+   - **Options**: `Title and abstract screening`
+   - **Format**: `CSV`
+3. Click **Prepare file**, then **Download** the CSV.
+
+![Export CSV](use/use_step1.png)
+---
+
+### ✅ Step 2: Open the CSV in Excel  
+
+
+1. Open the downloaded file (e.g., `review_XXXX_screen_csv.csv`) in Excel.
+2. Find the **Covidence #** column.
+3. Select and copy the list of study numbers that are assigned to you (e.g., rows 10 to 19).
+
+![Open CSV](use/use_step2.png)
+---
+
+### ✅ Step 3: Paste the study numbers into the Tampermonkey panel  
+
+
+1. Go to your Covidence review project in Chrome.
+2. You should see the Covidence Study Panel on the left (if the script is installed and active).
+3. Paste your copied list of study numbers into the input box.
+4. Click **Start** to begin screening.
+
+![Paste into panel](use/use_step3.png)
+---
+
+### ✅ Step 4: Screen studies using the panel  
+
+
+1. This userscript will automatically navigate to each study in your list.
+2. Click **Maybe**, **Yes**, or **No** in the panel to make your decisions.
+3. All decisions are logged in real time and visible in the panel.
+4. Click **Export decisions to .csv** at any time to download your screening log.
+
+![Screen from panel](use/use_step4.png)
+---
+
