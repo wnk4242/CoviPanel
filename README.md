@@ -49,9 +49,6 @@ This is a browser-based tool designed to help researchers efficiently complete t
 
 1. In the dashboard, click the **➕ (plus)** icon at the top right to create a new script.  
 2. Delete the default code entirely in the code editor and paste the code in **Covidence Study Navigator.user.js** into the code editor and click **File > Save**.
-
----
-
-Once saved, the script will automatically run whenever you visit Covidence.  
-
+3. Once saved, the script will automatically run whenever you visit Covidence.  
+![Step 3](installation/install_step3.png)  
 
