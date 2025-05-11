@@ -53,7 +53,7 @@ The script helps users:
 ![Step 2.1](installation/install_step2.1.png)  
 
 1. In the dashboard, click the **➕ (plus)** icon at the top right to create a new script.  
-2. Delete the default code entirely in the code editor and paste the code in **Covidence Study Navigator.user.js** into the code editor and click **File > Save**.
+2. Delete the default code entirely in the code editor and paste the code in **Covidence Study Navigator-2.0.1.user.js** into the code editor and click **File > Save**.
 3. Once saved, the script will automatically run whenever you visit Covidence. You should see a red badge on the Tampermonkey icon showing that your userscript is active and running on the page.
 
 ![Step 3](installation/install_step3.png)  
@@ -82,7 +82,7 @@ The script helps users:
 ### ✅ Step 2: Open the CSV in Excel  
 
 
-1. Open the downloaded file (e.g., `review_XXXX_screen_csv.csv`) in Excel.
+1. Open the downloaded file (e.g., `review_XXXX_screen_csv_XXXX.csv`) in Excel.
 2. Find the **Covidence #** column.
 3. Select and copy the list of study numbers that are assigned to you (e.g., rows 10 to 19).
 
