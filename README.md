@@ -15,7 +15,11 @@ And, yes, you can customize the buttons!
 </p>
 
 ## Key Features
-
+- **Flexible, layered interface**
+CoviPanel's layered layout lets you expand or collapse individual sections depending on what you need at the moment. Whether you want a clean, minimal view or full access to detailed tools, the interface adapts to your workflow without getting in the way.
+<p align="center">
+  <img src="ui/expandmainpanel.gif" width="300" style="margin-left: 20px;" />
+</p>
 - **Streamlined navigation**  
   No more scrolling through pages to find your studies. CoviPanel detects unscreened studies with one click and guides you through them one by one in a controlled, focused sequence. 
 
