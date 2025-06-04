@@ -47,7 +47,7 @@ CoviPanel's layered layout lets you expand or collapse individual sections depen
   All your decisions (and ChatGPT's, if enabled) are saved automatically. You can export them at any time in a clean CSV format for record-keeping or analysis.
 
 <p align="center">
- <img src="ui/decisiontrack.gif" width="600" style="margin-left: 20px;" />
+ <img src="ui/trackdecision.png" width="300" style="margin-left: 20px;" />
 </p>
 
 - **Session and time tracking**  
