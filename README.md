@@ -57,9 +57,26 @@ CoviPanel's layered layout lets you expand or collapse individual sections depen
 - **Progress tracking and academic-style gamification**  
   Watch your progress build over time. As you screen, you’ll climb through academic ranks‍—from Research Assistant 🤦‍ to Postdoc 🧔 and eventually reach Full Professor 🧙‍—a small reward system to keep momentum going during long review sessions.
 
-<p align="center">
- <img src="ui/bluebar.gif" width="600" style="margin-left: 20px;" />
-</p>
+<div align="center">
+
+| Level | #Papers Screened | Title                | Emoji | Description                          |
+|-------|------------------|----------------------|--------|--------------------------------------|
+| 1     | 0                | Research Assistant I | 🤦‍♂️   | Doesn't understand research at all.  |
+| 2     | 50               | Research Assistant II| 🤷‍♂️   | Still confused but trying.           |
+| 3     | 100              | PhD Student 1 Yr.    | 👦     | Newbie in grad school.               |
+| 4     | 200              | PhD Student 4 Yr.    | 🧔     | Has a beard of experience.           |
+| 5     | 300              | PhD Candidate        | 👴     | Old and wise (but still poor).       |
+| 6     | 400              | Dr.                  | 👨‍🎓   | Finally got the title, still no job. |
+| 7     | 500              | Postdoc 1 Yr.        | 🙂     | Optimistic researcher.               |
+| 8     | 600              | Postdoc 9 Yr.        | 😭     | Send help.                           |
+| 9     | 700              | Assistant Prof.      | 👨‍🏫   | Grading forever.                     |
+| 10    | 800              | Associate Prof.      | 🦹‍♂️   | Master of committees.                |
+| 11    | 900              | Professor            | 🧙‍♂️   | Wizard of academia.                  |
+| 12    | 1000             | Emeritus Prof.       | 🥂     | Retired. Toasting to freedom.        |
+
+</div>
+
+
 
 - **Keyword search and highlighting**  
   You can search for multiple keywords in titles and abstracts and highlight them simultaneously. Frequently used keywords are saved, making repeated searches easier and faster.
