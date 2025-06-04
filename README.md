@@ -68,7 +68,7 @@ CoviPanel's layered layout lets you expand or collapse individual sections depen
   CoviPanel tracks how much time you spend screening and computes your average decision speed. You’ll know exactly how long each session takes—and how fast you’re moving through the list.
 
 <p align="center">
- <img src="ui/popupmessage.png" width="600" style="margin-left: 20px;" />
+ <img src="ui/pppmessage.png" width="600" style="margin-left: 20px;" />
 </p>
 
 - **Keyword search and highlighting**  
