@@ -1,6 +1,6 @@
 # CoviPanel
 
-**CoviPanel** is a powerful browser extension built for researchers who screen hundreds, if not thousands, of studies on Covidence. Designed to streamline the most tedious part of the systematic review process (title and abstract screen), CoviPanel transforms screening from a repetitive task into a faster, smarter, and even slightly more enjoyable one.
+**CoviPanel** is a powerful browser extension (Tampermonkey userscript) built for researchers who screen hundreds, if not thousands, of studies on Covidence. Designed to streamline the most tedious part of the systematic review process (title and abstract screen), CoviPanel transforms screening from a repetitive task into a faster, smarter, and even slightly more enjoyable one.
 
 Whether you're reviewing tens, hundreds, or thousands of abstracts, CoviPanel helps you stay focused, work faster, and make more consistent decisions. It combines simplified navigation, real-time progress tracking, and strong AI support—all within a clean, thoughtfully designed, floating panel that stays with you while you work.
 <!-- 
