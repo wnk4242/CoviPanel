@@ -10,8 +10,8 @@ Whether you're reviewing tens, hundreds, or thousands of abstracts, CoviPanel he
 And, yes, you can customize the buttons!
 <p align="center">
   <img src="ui/mainpanelorig.png" width="200" style="margin-left: 20px;" />
-  <img src="ui/watergif.gif" width="200" style="margin-left: 20px;" />
-  <img src="ui/snoopygif.gif" width="200" style="margin-left: 20px;" />
+  <img src="ui/water5s.gif" width="200" style="margin-left: 20px;" />
+  <img src="ui/snoopy5s.gif" width="200" style="margin-left: 20px;" />
 </p>
 
 ## Key Features
