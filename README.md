@@ -68,5 +68,7 @@ CoviPanel's layered layout lets you expand or collapse individual sections depen
 - **Custom button appearance styling**  
   Want more personalized, visually appealing YES, NO, and MAYBE buttons? You can upload an image (JPG, PNG, or even GIF) to change the look of the decision buttons to your liking.
 
-
+<p align="center">
+ <img src="ui/buttonstyle.gif" width="600" style="margin-left: 20px;" />
+</p>
 
