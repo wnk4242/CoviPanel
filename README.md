@@ -22,9 +22,9 @@ CoviPanel's layered layout lets you expand or collapse individual sections depen
 </p>
 
 - **Streamlined navigation**  
-  No more scrolling through pages to find your studies. CoviPanel detects unscreened studies with one click and guides you through them one by one in a controlled, focused sequence. 
+  No more scrolling through pages to find your studies. CoviPanel can detect unscreened studies with one click or let you paste a list of study IDs directly from Excel. It then guides you through them one by one in a focused, controlled sequence.
 <p align="center">
- <img src="ui/navigation2.gif" width="560" style="margin-left: 20px;" />
+ <img src="ui/navigation3.gif" width="560" style="margin-left: 20px;" />
 </p>
 <!-- 
 <hr style="border: none; border-top: 1px solid #ccc; margin: 30px auto;" />
