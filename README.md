@@ -8,7 +8,7 @@ Whether you're reviewing tens, hundreds, or thousands of abstracts, CoviPanel he
 -->
 
 And, yes, you can customize the buttons!
-<p align="left">
+<p align="center">
   <img src="ui/mainpanel1.png" alt="main panel 1" width="300" style="margin-left: 20px;" />
   <img src="ui/mainpanel2.png" alt="main panel 2" width="300" style="margin-left: 20px;" />
   <img src="ui/mainpanel3.png" alt="main panel 3" width="300" style="margin-left: 20px;" />
@@ -19,12 +19,17 @@ And, yes, you can customize the buttons!
 - **Streamlined navigation**  
   No more scrolling through pages to find your studies. CoviPanel detects unscreened studies with one click and guides you through them one by one in a controlled, focused sequence. 
 
-<p align="left">
+<p align="center">
   <img src="ui/StartPanel.png" alt="start panel" width="300" style="margin-left: 20px;" />
 </p>
 
 - **Progress tracking and academic-style gamification**  
-  Watch your progress build over time. As you screen, you’ll climb through academic ranks‍—from Research Assistant🤦‍ to Postdoc🧔 and eventually reach Full Professor🧙‍—a small reward system to keep momentum going during long review sessions.
+  Watch your progress build over time. As you screen, you’ll climb through academic ranks‍—from Research Assistant 🤦‍ to Postdoc 🧔 and eventually reach Full Professor 🧙‍—a small reward system to keep momentum going during long review sessions.
+
+<p align="center">
+  <img src="ui/LifeTimeProgress1.png" width="300" />
+  <img src="ui/LifeTimeProgress2.png" width="300" />
+</p>
 
 - **AI-assisted screening (OpenAI API key required)**  
   CoviPanel integrates with ChatGPT to provide a second opinion on each study. It sends the title and abstract to ChatGPT and displays the AI's decision and explanation in the panel. 
