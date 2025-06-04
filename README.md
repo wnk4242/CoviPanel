@@ -33,15 +33,12 @@ CoviPanel's layered layout lets you expand or collapse individual sections depen
 </p>
 -->
 
-- **Progress tracking and academic-style gamification**  
-  Watch your progress build over time. As you screen, you’ll climb through academic ranks‍—from Research Assistant 🤦‍ to Postdoc 🧔 and eventually reach Full Professor 🧙‍—a small reward system to keep momentum going during long review sessions.
+- **AI-assisted screening (OpenAI API key required)**  
+  CoviPanel integrates with ChatGPT to provide a second opinion on each study. It sends the title and abstract to ChatGPT and displays its recommendation and explanation in the panel. 
 
 <p align="center">
- <img src="ui/bluebar.gif" width="600" style="margin-left: 20px;" />
+ <img src="ui/aiask.gif" width="335" style="margin-left: 20px;" />
 </p>
-
-- **AI-assisted screening (OpenAI API key required)**  
-  CoviPanel integrates with ChatGPT to provide a second opinion on each study. It sends the title and abstract to ChatGPT and displays the AI's decision and explanation in the panel. 
 
 - **Decision logging and export to CSV**  
   All your decisions (and ChatGPT's, if enabled) are saved automatically. You can export them at any time in a clean CSV format for record-keeping or analysis.
@@ -55,6 +52,13 @@ CoviPanel's layered layout lets you expand or collapse individual sections depen
 
 <p align="center">
  <img src="ui/popupmessage.png" width="600" style="margin-left: 20px;" />
+</p>
+
+- **Progress tracking and academic-style gamification**  
+  Watch your progress build over time. As you screen, you’ll climb through academic ranks‍—from Research Assistant 🤦‍ to Postdoc 🧔 and eventually reach Full Professor 🧙‍—a small reward system to keep momentum going during long review sessions.
+
+<p align="center">
+ <img src="ui/bluebar.gif" width="600" style="margin-left: 20px;" />
 </p>
 
 - **Keyword search and highlighting**  
