@@ -4,11 +4,10 @@
 
 Whether you're reviewing tens, hundreds, or thousands of abstracts, CoviPanel helps you stay focused, work faster, and make more consistent decisions. It combines simplified navigation, real-time progress tracking, and strong AI support—all within a clean, thoughtfully designed, floating panel that stays with you while you work.
 <!-- 
-![Front panel](/ui/Front%20panel.png)
-![Main panel](/ui/Main%20panel.png)
+![main panel full](/ui/MainPanelFull.png)
 -->
 <p align="left">
-  <img src="ui/Main%20panel.png" alt="CoviPanel main panel" width="300" style="margin-left: 20px;" />
+  <img src="ui/MainPanelFull.png" alt="main panel full" width="300" style="margin-left: 20px;" />
 </p>
 
 ## Key Features
@@ -17,7 +16,7 @@ Whether you're reviewing tens, hundreds, or thousands of abstracts, CoviPanel he
   No more scrolling through pages to find your studies. CoviPanel detects unscreened studies with one click and guides you through them one by one in a controlled, focused sequence. 
 
 <p align="left">
-  <img src="ui/Front%20panel.png" alt="CoviPanel front panel" width="300" style="margin-left: 20px;" />
+  <img src="ui/StartPanel.png" alt="start panel" width="300" style="margin-left: 20px;" />
 </p>
 
 - **Progress tracking and academic-style gamification**  
