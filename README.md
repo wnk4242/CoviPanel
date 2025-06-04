@@ -37,7 +37,7 @@ CoviPanel's layered layout lets you expand or collapse individual sections depen
   Watch your progress build over time. As you screen, you’ll climb through academic ranks‍—from Research Assistant 🤦‍ to Postdoc 🧔 and eventually reach Full Professor 🧙‍—a small reward system to keep momentum going during long review sessions.
 
 <p align="center">
- <img src="ui/bluebarprogress.gif" width="600" style="margin-left: 20px;" />
+ <img src="ui/bluebar.gif" width="600" style="margin-left: 20px;" />
 </p>
 
 - **AI-assisted screening (OpenAI API key required)**  
@@ -45,6 +45,10 @@ CoviPanel's layered layout lets you expand or collapse individual sections depen
 
 - **Decision logging and export to CSV**  
   All your decisions (and ChatGPT's, if enabled) are saved automatically. You can export them at any time in a clean CSV format for record-keeping or analysis.
+
+<p align="center">
+ <img src="ui/decisiontrack.gif" width="600" style="margin-left: 20px;" />
+</p>
 
 - **Session and time tracking**  
   CoviPanel tracks how much time you spend screening and computes your average decision speed. You’ll know exactly how long each session takes—and how fast you’re moving through the list.
