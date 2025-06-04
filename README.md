@@ -1,21 +1,31 @@
-# Covidence Study Navigator (Tampermonkey Userscript)
+# CoviPanel
 
-This Tampermonkey userscript is designed to streamline the screening process in [Covidence](https://www.covidence.org/), a tool commonly used for literature and systematic reviews. In large reviews, researchers are often assigned to screen a range or a randomized set of studies. Covidence allows users to search for one study at a time, but doesn't support easy navigation through a custom list of study IDs, especially when the study IDs are non-consecutive, or they are not located at the top of the study list.
+**CoviPanel** is a powerful browser extension built for researchers who screen hundreds, if not thousands, of studies on Covidence. Designed to streamline the most tedious part of the systematic review process (title and abstract screen), CoviPanel transforms screening from a repetitive task into a faster, smarter, and even slightly more enjoyable one.
 
+Whether you're reviewing tens, hundreds, or thousands of abstracts, CoviPanel helps you stay focused, work faster, and make more consistent decisions. It combines simplified navigation, real-time progress tracking, and strong AI support—all within a clean, thoughtfully designed, floating panel that stays with you while you work.
 
-## Features
-The script helps users:
-- Embedded draggable panel in the Covidence UI.
-- Automatically navigate to each study in the list.
-- Make Yes/No/Maybe decisions using built-in buttons on the panel.
-- Record and log decisions in real time.
-- Export screening decisions as a CSV file for tracking or auditing.
-- Click on logged study IDs in a summary section to jump directly to a specific study.
+## Key Features
 
-#### Front panel:
-![UIx](ui/CSN_UIx.png)
+- **Streamlined navigation**  
+  No more scrolling through pages to find your studies. CoviPanel detects unscreened studies with one click and guides you through them—one by one—in a controlled, focused sequence. 
 
-#### Main panel:
-![UIxx](ui/CSN_UIxx.png)
+- **Progress tracking and academic-style gamification**  
+  Watch your progress build over time. As you screen, you’ll climb through academic ranks—from Research Assistant to Full Professor. It's a small reward system to keep momentum going during long review sessions.
+
+- **AI-assisted screening (OpenAI API key required)**  
+  CoviPanel integrates with ChatGPT to provide a second opinion on each study. It sends the title and abstract to ChatGPT and displays the AI's decision and explanation in the panel. 
+
+- **Decision logging and export to CSV**  
+  All your decisions (and ChatGPT's, if enabled) are saved automatically. You can export them at any time in a clean CSV format for record-keeping or analysis.
+
+- **Session and time tracking**  
+  CoviPanel tracks how much time you spend screening and computes your average decision speed. You’ll know exactly how long each session takes—and how fast you’re moving through the list.
+
+- **Keyword search and highlighting**  
+  You can search for multiple keywords in titles and abstracts and highlight them simultaneously. Frequently used keywords are saved, making repeated searches easier and faster.
+
+- **Custom button styling (optional)**  
+  Want more personalized, prettier YES, NO, and MAYBE buttons? You can upload an image (JPG, PNG, or even GIF) to change the look of the decision buttons to your liking.
+
 
 
