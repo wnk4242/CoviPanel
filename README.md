@@ -25,7 +25,8 @@ CoviPanel's layered layout lets you expand or collapse individual sections depen
   No more scrolling through pages to find your studies. CoviPanel detects unscreened studies with one click and guides you through them one by one in a controlled, focused sequence. 
 
 <p align="center">
-  <img src="ui/StartPanel.png" alt="start panel" width="300" style="margin-left: 20px;" />
+ <img src="ui/navigation2.gif" width="560" style="margin-left: 20px;" />
+ <img src="ui/navigation3.gif" width="560" style="margin-left: 20px;" />
 </p>
 
 - **Progress tracking and academic-style gamification**  
