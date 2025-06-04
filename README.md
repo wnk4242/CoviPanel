@@ -23,11 +23,15 @@ CoviPanel's layered layout lets you expand or collapse individual sections depen
 
 - **Streamlined navigation**  
   No more scrolling through pages to find your studies. CoviPanel detects unscreened studies with one click and guides you through them one by one in a controlled, focused sequence. 
-
 <p align="center">
  <img src="ui/navigation2.gif" width="560" style="margin-left: 20px;" />
+</p>
+<!-- 
+<hr style="border: none; border-top: 1px solid #ccc; margin: 30px auto;" />
+<p align="center">
  <img src="ui/navigation3.gif" width="560" style="margin-left: 20px;" />
 </p>
+-->
 
 - **Progress tracking and academic-style gamification**  
   Watch your progress build over time. As you screen, you’ll climb through academic ranks‍—from Research Assistant 🤦‍ to Postdoc 🧔 and eventually reach Full Professor 🧙‍—a small reward system to keep momentum going during long review sessions.
