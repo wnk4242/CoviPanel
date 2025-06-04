@@ -60,6 +60,11 @@ CoviPanel's layered layout lets you expand or collapse individual sections depen
 - **Keyword search and highlighting**  
   You can search for multiple keywords in titles and abstracts and highlight them simultaneously. Frequently used keywords are saved, making repeated searches easier and faster.
 
+<p align="center">
+ <img src="ui/keywordsearch.png" width="700" style="margin-left: 20px;" />
+</p>
+
+
 - **Custom button appearance styling**  
   Want more personalized, visually appealing YES, NO, and MAYBE buttons? You can upload an image (JPG, PNG, or even GIF) to change the look of the decision buttons to your liking.
 
