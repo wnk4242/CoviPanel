@@ -8,7 +8,6 @@ Whether you're reviewing tens, hundreds, or thousands of abstracts, CoviPanel he
 ![Front panel](/ui/Main%20panel.png)
 -->
 <p align="center">
-  <img src="ui/Front%20panel.png" alt="CoviPanel Front Panel" width="300" />
   <img src="ui/Main%20panel.png" alt="CoviPanel Main Panel" width="300" style="margin-left: 20px;" />
 </p>
 
