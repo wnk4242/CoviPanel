@@ -37,8 +37,7 @@ CoviPanel's layered layout lets you expand or collapse individual sections depen
   Watch your progress build over time. As you screen, you’ll climb through academic ranks‍—from Research Assistant 🤦‍ to Postdoc 🧔 and eventually reach Full Professor 🧙‍—a small reward system to keep momentum going during long review sessions.
 
 <p align="center">
-  <img src="ui/LifeTimeProgress1.png" width="300" />
-  <img src="ui/LifeTimeProgress2.png" width="300" />
+ <img src="ui/bluebarprogress.gif" width="600" style="margin-left: 20px;" />
 </p>
 
 - **AI-assisted screening (OpenAI API key required)**  
