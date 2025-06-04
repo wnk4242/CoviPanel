@@ -33,27 +33,6 @@ CoviPanel's layered layout lets you expand or collapse individual sections depen
 </p>
 -->
 
-- **AI-assisted screening (OpenAI API key required)**  
-  CoviPanel integrates with ChatGPT to provide a second opinion on each study. It sends the title and abstract to ChatGPT and displays its recommendation and explanation in the panel. 
-
-<p align="center">
- <img src="ui/aiask.gif" width="335" style="margin-left: 20px;" />
-</p>
-
-- **Decision logging and export to CSV**  
-  All your decisions (and ChatGPT's, if enabled) are saved automatically. You can export them at any time in a clean CSV format for record-keeping or analysis.
-
-<p align="center">
- <img src="ui/trackdecision.png" width="300" style="margin-left: 20px;" />
-</p>
-
-- **Session and time tracking**  
-  CoviPanel tracks how much time you spend screening and computes your average decision speed. You’ll know exactly how long each session takes—and how fast you’re moving through the list.
-
-<p align="center">
- <img src="ui/popupmessage.png" width="600" style="margin-left: 20px;" />
-</p>
-
 - **Progress tracking and academic-style gamification**  
   Watch your progress build over time. As you screen, you’ll climb through academic ranks‍—from Research Assistant 🤦‍ to Postdoc 🧔 and eventually reach Full Professor 🧙‍—a small reward system to keep momentum going during long review sessions.
 
@@ -78,6 +57,20 @@ CoviPanel's layered layout lets you expand or collapse individual sections depen
 
 
 
+- **AI-assisted screening (OpenAI API key required)**  
+  CoviPanel integrates with ChatGPT to provide a second opinion on each study. It sends the title and abstract to ChatGPT and displays its recommendation and explanation in the panel. 
+
+<p align="center">
+ <img src="ui/aiask.gif" width="335" style="margin-left: 20px;" />
+</p>
+
+- **Session and time tracking**  
+  CoviPanel tracks how much time you spend screening and computes your average decision speed. You’ll know exactly how long each session takes—and how fast you’re moving through the list.
+
+<p align="center">
+ <img src="ui/popupmessage.png" width="600" style="margin-left: 20px;" />
+</p>
+
 - **Keyword search and highlighting**  
   You can search for multiple keywords in titles and abstracts and highlight them simultaneously. Frequently used keywords are saved, making repeated searches easier and faster.
 
@@ -93,3 +86,9 @@ CoviPanel's layered layout lets you expand or collapse individual sections depen
  <img src="ui/buttonstyle.gif" width="600" style="margin-left: 20px;" />
 </p>
 
+- **Decision logging and export to CSV**  
+  All your decisions (and ChatGPT's, if enabled) are saved automatically. You can export them at any time in a clean CSV format for record-keeping or analysis.
+
+<p align="center">
+ <img src="ui/trackdecision.png" width="300" style="margin-left: 20px;" />
+</p>
