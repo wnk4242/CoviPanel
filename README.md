@@ -6,8 +6,12 @@ Whether you're reviewing tens, hundreds, or thousands of abstracts, CoviPanel he
 <!-- 
 ![main panel full](/ui/MainPanelFull.png)
 -->
+
+And, yes, you can customize the buttons!
 <p align="left">
-  <img src="ui/MainPanelFull.png" alt="main panel full" width="300" style="margin-left: 20px;" />
+  <img src="ui/mainpanel1.png" alt="main panel 1" width="300" style="margin-left: 20px;" />
+  <img src="ui/mainpanel2.png" alt="main panel 2" width="300" style="margin-left: 20px;" />
+  <img src="ui/mainpanel3.png" alt="main panel 3" width="300" style="margin-left: 20px;" />
 </p>
 
 ## Key Features
