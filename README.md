@@ -24,7 +24,7 @@ And, yes, you can customize the buttons!
 </p>
 
 - **Progress tracking and academic-style gamification**  
-  Watch your progress build over time. As you screen, you’ll climb through academic ranks from Research Assistant to Full Professor—a small reward system to keep momentum going during long review sessions.
+  Watch your progress build over time. As you screen, you’ll climb through academic ranks‍—from Research Assistant🤦‍ to Postdoc🧔 and eventually reach Full Professor🧙‍—a small reward system to keep momentum going during long review sessions.
 
 - **AI-assisted screening (OpenAI API key required)**  
   CoviPanel integrates with ChatGPT to provide a second opinion on each study. It sends the title and abstract to ChatGPT and displays the AI's decision and explanation in the panel. 
