@@ -1,0 +1,313 @@
+From 6.0.9 to 6.2.9, a critical error exists (read below). The solution is in this file.
+
+In chatgpt I asked:
+
+in version 6.2.8, why when I use the covidence built-in decision buttons (maybe, yes,no) for the last study in a session, they can't trigger the popup message, don't push the green progress bar to 100%, don't redirect to the main page, and don't reset the panel to front screen where I input study IDs? They can do that in the past! Note that the panel's decision buttons work well. but in 6.0.8 version, the covidence built-in decision buttons can trigger all those events. Review the code and compare them, tell me why this is happening and how to fix the error
+
+✅ Root Cause
+In version 6.0.8, there is a comprehensive document.body.addEventListener("click", ...) listener that handles when a built-in Covidence vote button (Yes, No, Maybe) is clicked and executes all final session logic if it’s the last study.
+
+That logic block:
+
+Triggers updateSummary() and createLevelProgressUI()
+
+Calculates average decision time
+
+Exports CSV
+
+Shows the popup message
+
+Resets all GM_setValue study state
+
+Redirects to vote_required_from screen
+
+In version 6.2.8, the document.body.addEventListener("click", ...) listener is still there, but the final session logic inside that block is missing. It performs intermediate updates (like decision saving and summary updates), but does not handle the "last study finished" case.
+
+✅ How to Fix It
+To restore the full functionality of the Covidence built-in buttons in version 6.2.8, do the following:
+
+🔧 Step-by-Step Fix Instructions
+✅ Step 1: Locate the event listener
+Search for:
+
+js
+Copy
+Edit
+document.body.addEventListener("click", function(e) {
+This is near the bottom of the script.
+
+✅ Step 2: Replace the entire document.body.addEventListener(...) block
+Replace it with the full version from 6.0.8, which includes the end-of-session logic. Here’s exactly what to do:
+
+Delete the entire current block from:
+
+js
+Copy
+Edit
+document.body.addEventListener("click", function(e) {
+...down to its corresponding }); at the end of the function.
+
+Replace it with the complete block from 6.0.8 — the one that starts with:
+
+js
+Copy
+Edit
+document.body.addEventListener("click", function(e) {
+...and ends with its full }); closure (including the logic that checks if (allFinished), shows the popup, exports CSV, resets the panel, and redirects).
+
+This fix ensures the Covidence built-in buttons will behave identically to the panel buttons when voting on the final study.
+
+
+=================BELOW IS SOLUTION==================
+
+Absolutely — here's the full working replacement block from version 6.0.8. Just follow this:
+
+🔁 Replace This Block in Your 6.2.8 Script
+🔍 Find and delete this entire block:
+js
+Copy
+Edit
+document.body.addEventListener("click", function(e) {
+    const voteBtn = e.target.closest("button.vote-option");
+    if (voteBtn && ["Yes", "No", "Maybe"].includes(voteBtn.value)) {
+        // ❌ THIS ENTIRE BLOCK IS INCOMPLETE IN 6.2.8
+    }
+});
+✅ Replace it with this complete, working block from 6.0.8:
+js
+Copy
+Edit
+document.body.addEventListener("click", function(e) {
+    const voteBtn = e.target.closest("button.vote-option");
+    if (voteBtn && ["Yes", "No", "Maybe"].includes(voteBtn.value)) {
+        let currentID = voteBtn?.closest("li")?.querySelector("span")?.textContent?.trim() || null;
+        if (currentID && lastVotedStudy === currentID) return;
+        lastVotedStudy = currentID;
+
+        const panel = document.getElementById("covidence-panel");
+        const studyControlsVisible = panel && panel.querySelector('#studyControls')?.style.display !== 'none';
+        if (!studyControlsVisible) return;
+        if (window.__fromPanel) return;
+
+        const savedList = GM_getValue('studyList', '');
+        const savedIndex = GM_getValue('studyIndex', 0);
+        const decisions = JSON.parse(GM_getValue('decisions', '{}'));
+        const studies = savedList.split(',').map(s => s.trim()).filter(Boolean);
+        currentID = studies[savedIndex];
+
+        if (currentID) {
+            if (lastDecisionTime) {
+                const elapsed = Date.now() - lastDecisionTime;
+                totalDecisionTimeMs += elapsed;
+                totalDecisionsMade += 1;
+            }
+
+            decisions[currentID] = voteBtn.value;
+            GM_setValue("decisions", JSON.stringify(decisions));
+            const totalKey = "totalStudiesScreened";
+            const prev = parseInt(GM_getValue(totalKey, "0"), 10);
+            GM_setValue(totalKey, (prev + 1).toString());
+            updateLifetimeProgressUI();
+        }
+
+        const allFinished = studies.every(id =>
+            ["Yes", "No", "Maybe", "Skipped"].includes(decisions[id])
+        );
+
+        if (allFinished) {
+            const panel = document.getElementById("covidence-panel");
+            if (panel) {
+                const currentDisplay = panel.querySelector('#currentStudy');
+                if (currentDisplay) currentDisplay.textContent = `#${currentID}`;
+                const summaryList = panel.querySelector('#summaryList');
+                const toggleSummaryBtn = panel.querySelector('#toggleSummaryBtn');
+
+                const maybeList = studies.filter(id => decisions[id] === "Maybe");
+                const yesList = studies.filter(id => decisions[id] === "Yes");
+                const noList = studies.filter(id => decisions[id] === "No");
+
+                function makeToggleBlock(label, ids, color) {
+                    const container = document.createElement("div");
+                    container.style.marginBottom = "2px";
+                    container.style.fontSize = "12px";
+                    container.style.lineHeight = "1.4";
+                    container.style.display = "flex";
+                    container.style.alignItems = "flex-start";
+                    container.style.flexWrap = "nowrap";
+                    container.style.overflow = "hidden";
+
+                    const textSpan = document.createElement("div");
+                    textSpan.style.flex = "1 1 auto";
+                    textSpan.style.overflow = "hidden";
+                    textSpan.style.whiteSpace = "nowrap";
+                    textSpan.style.textOverflow = "ellipsis";
+                    textSpan.innerHTML = `<strong style="color:${color}">${label}:</strong> ` +
+                                         `<span style="color:${color}">${ids.join(", ")}</span>`;
+
+                    const toggleBtn = document.createElement("div");
+                    toggleBtn.textContent = "[+]";
+                    toggleBtn.style.flex = "0 0 auto";
+                    toggleBtn.style.color = "#007BFF";
+                    toggleBtn.style.cursor = "pointer";
+                    toggleBtn.style.fontSize = "11px";
+                    toggleBtn.style.marginLeft = "6px";
+                    toggleBtn.style.userSelect = "none";
+
+                    let expanded = false;
+                    toggleBtn.onclick = () => {
+                        expanded = !expanded;
+                        textSpan.style.whiteSpace = expanded ? "normal" : "nowrap";
+                        textSpan.style.overflow = expanded ? "visible" : "hidden";
+                        textSpan.style.textOverflow = expanded ? "unset" : "ellipsis";
+                        toggleBtn.textContent = expanded ? "[–]" : "[+]";
+                    };
+
+                    container.appendChild(textSpan);
+                    container.appendChild(toggleBtn);
+                    return container;
+                }
+
+                const decisionSummaryContainer = document.getElementById("decisionSummaryContainer");
+                if (decisionSummaryContainer) {
+                    decisionSummaryContainer.innerHTML = "";
+                    decisionSummaryContainer.appendChild(makeToggleBlock("Maybe", maybeList, "orange"));
+                    decisionSummaryContainer.appendChild(makeToggleBlock("Yes", yesList, "green"));
+                    decisionSummaryContainer.appendChild(makeToggleBlock("No", noList, "red"));
+                }
+
+                summaryList.style.display = 'block';
+                if (toggleSummaryBtn) toggleSummaryBtn.textContent = 'Hide decisions ▲';
+                GM_setValue('summaryVisible', true);
+            }
+
+            const counted = studies.filter(id => ["Yes", "No", "Maybe", "Skipped"].includes(decisions[id])).length;
+            const progress = Math.round((counted / studies.length) * 100);
+            if (progressBar && studies.length > 0) {
+                progressBar.style.width = progress + '%';
+            }
+            if (progressInline) {
+                progressInline.textContent = `(${counted} of ${studies.length} done)`;
+            }
+
+            if (document.getElementById("summaryList") && !document.getElementById("lifetimeProgressContainer")) {
+                createLevelProgressUI(document.getElementById("summaryList"));
+            }
+
+            setTimeout(() => {
+                const startTime = GM_getValue("sessionStartTime", null);
+                let sessionMsg = "";
+                if (startTime) {
+                    const elapsedMs = Date.now() - startTime;
+                    const previousTotal = parseInt(GM_getValue("totalTimeMs", "0"), 10);
+                    const newTotal = previousTotal + elapsedMs;
+                    GM_setValue("totalTimeMs", newTotal);
+
+                    const totalSeconds = Math.floor(elapsedMs / 1000);
+                    const hours = Math.floor(totalSeconds / 3600);
+                    const mins = Math.floor((totalSeconds % 3600) / 60);
+                    const secs = totalSeconds % 60;
+                    const sessionTimeStr = `${hours}h ${mins}m ${secs}s`;
+
+                    const totalSec = Math.floor(newTotal / 1000);
+                    const totalH = Math.floor(totalSec / 3600);
+                    const totalM = Math.floor((totalSec % 3600) / 60);
+                    const totalS = totalSec % 60;
+                    const totalTimeStr = `${totalH}h ${totalM}m ${totalS}s`;
+                    sessionMsg = `\n⏱ Session time: ${sessionTimeStr}\n🕒 Total time: ${totalTimeStr}`;
+                    GM_setValue("sessionStartTime", null);
+                }
+
+                const avgDecisionTimeSec = totalDecisionsMade > 0
+                    ? (totalDecisionTimeMs / totalDecisionsMade / 1000).toFixed(1)
+                    : "0.0";
+
+                const maybeCount = Object.values(decisions).filter(v => v === "Maybe").length;
+                const yesCount = Object.values(decisions).filter(v => v === "Yes").length;
+                const noCount = Object.values(decisions).filter(v => v === "No").length;
+                const totalCount = maybeCount + yesCount + noCount;
+
+                const maybePct = totalCount ? ((maybeCount / totalCount) * 100).toFixed(1) : "0.0";
+                const yesPct = totalCount ? ((yesCount / totalCount) * 100).toFixed(1) : "0.0";
+                const noPct = totalCount ? ((noCount / totalCount) * 100).toFixed(1) : "0.0";
+
+                const aiDecisions = JSON.parse(GM_getValue("chatgpt_decisions", "{}"));
+                const irr = computeIRR(decisions, aiDecisions, studies);
+
+                alert(
+                    "You've reached the end of your study list!" + sessionMsg +
+                    `\n⏳ Avg decision time: ${avgDecisionTimeSec}s` +
+                    `\n🤖 Interrater Reliability with ChatGPT: ${irr}` +
+                    "\n\n📊 Decision breakdown:\n" +
+                    `• Maybe: ${maybeCount} (${maybePct}%)\n` +
+                    `• Yes: ${yesCount} (${yesPct}%)\n` +
+                    `• No: ${noCount} (${noPct}%)`
+                );
+
+                const aiExplanations = JSON.parse(GM_getValue("chatgpt_explanations", "{}"));
+                const csvHeader = "Study ID,User Decision,ChatGPT Decision,ChatGPT Reason";
+                const csvRows = studies.map(id => {
+                    const userVote = decisions[id] || "";
+                    const aiVote = aiDecisions[id] || "";
+                    const reason = aiExplanations[id] ? `"${aiExplanations[id].replace(/"/g, '""')}"` : "";
+                    return `${id},${userVote},${aiVote},${reason}`;
+                });
+
+                const csvContent = "data:text/csv;charset=utf-8," + [csvHeader, ...csvRows].join("\n");
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", "covidence_decisions.csv");
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                GM_setValue('studyList', '');
+                GM_setValue('studyIndex', 0);
+                GM_setValue('decisions', '{}');
+
+                if (panel) {
+                    const listInput = panel.querySelector('#studyListInput');
+                    const startBtn = panel.querySelector('#startBtn');
+                    const controls = panel.querySelector('#studyControls');
+                    listInput.style.display = 'block';
+                    startBtn.style.display = 'block';
+                    controls.style.display = 'none';
+                    listInput.value = '';
+                    document.getElementById("topRightIcons").style.display = "none";
+                }
+
+                const match = window.location.href.match(/\/reviews\/(\d+)\//);
+                if (match) {
+                    const reviewID = match[1];
+                    const targetURL = `https://${location.hostname}/reviews/${reviewID}/review_studies/screen?filter=vote_required_from`;
+                    window.location.href = targetURL;
+                }
+            }, 100);
+        } else {
+            const newIndex = savedIndex + 1;
+            if (newIndex < studies.length) {
+                GM_setValue('studyIndex', newIndex);
+                setTimeout(() => {
+                    if (panel) {
+                        const currentDisplay = panel.querySelector('#currentStudy');
+                        if (currentDisplay) currentDisplay.textContent = `#${studies[newIndex]}`;
+                        panel.dataset.jumpTo = studies[newIndex];
+                    }
+                }, 100);
+            }
+        }
+    }
+});
+Once you've done this, built-in vote buttons will once again behave the same as your panel buttons, including:
+
+showing the final popup
+
+hitting 100% on the progress bar
+
+exporting the CSV
+
+resetting the UI
+
+redirecting back to the unscreened list.
+
+Let me know when you’re ready to modularize this logic into a clean function.
