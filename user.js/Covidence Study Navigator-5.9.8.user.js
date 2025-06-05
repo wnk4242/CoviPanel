@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Covidence Study Navigator
 // @namespace    http://tampermonkey.net/
-// @version      6.1.8
+// @version      5.9.8
 // @description  Draggable Covidence panel with saved position, decision logging, CSV export, color-coded decision display.
 // @match        *://*.covidence.org/*
 // @grant        GM_setValue
@@ -239,46 +239,23 @@ toast.innerHTML = `
               </div>
               <div style="margin-bottom: 20px; display: flex; flex-direction: column; gap: 8px; align-items: center;"></div>
               <!-- Keyword Search UI -->
-<div style='margin-top: -15px; margin-bottom: 10px;'>
-  <div style='display: flex; gap: 6px; align-items: center;'>
-    <div style='position: relative; flex: 1; max-width: 220px;'>
-      <input id='keywordInput' placeholder='Enter keywords' style='width: 100%; padding: 4px; font-size: 13px;'>
-      <div id='keywordHistoryDropdown' style='position:absolute; top:100%; left:0; right:0; background:white; border:1px solid #ccc; max-height:100px; overflow-y:auto; font-size:13px; z-index:9999; display:none;'></div>
-    </div>
-    <button id='addKeywordsBtn' title='Search keyword' style='background: none; border: none; cursor: pointer; font-size: 18px;'>🔍︎</button>
-    <span id='summaryToggleIcon' title='Toggle decision summary'>⋯</span>
-  </div>
-  <div id='keywordTags' style='margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px;'></div>
-</div>
-
-
-
+              <div style='margin-top: -15px; margin-bottom: 14px;'>
+                <div style='display: flex; gap: 6px;'>
+                  <div style='position: relative; flex: 1;'>
+                    <input id='keywordInput' placeholder='Enter keywords' style='width: 100%; padding: 4px; font-size: 13px;'>
+                    <div id='keywordHistoryDropdown' style='position:absolute; top:100%; left:0; right:0; background:white; border:1px solid #ccc; max-height:100px; overflow-y:auto; font-size:13px; z-index:9999; display:none;'></div>
+                  </div>
+                  <button id='addKeywordsBtn' title='Search keyword' style='background: none; border: none; cursor: pointer; font-size: 18px;'>🔍︎</button>
+                </div>
+                <div id='keywordTags' style='margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px;'></div>
+              </div>
+              <button id='toggleSummaryBtn' style='margin: 0 auto 8px auto; display: block; background: none; border: none; color: #007BFF; font-size: 13px; cursor: pointer;'>Show decisions ▼</button>
 <div id='summaryList' style='display:none; font-size: 12px; line-height: 1.4;'>
   <div id="lifetimeProgressContainer" style="height: 48px;"></div>
   <div id="decisionSummaryContainer" style="min-height: 36px;"></div>
 </div>`;
 
         document.body.appendChild(panel);
-        const toggleDotsStyle = document.createElement("style");
-toggleDotsStyle.textContent = `
-#summaryToggleIcon {
-  display: inline-block;
-  cursor: pointer;
-  font-size: 18px;
-  padding: 0px 4px;
-  border-radius: 4px;
-  line-height: 1;
-}
-#summaryToggleIcon:hover {
-  background-color: #ccc;
-}
-`;
-
-document.head.appendChild(toggleDotsStyle);
-
-
-
-
 const styleFixCursor = document.createElement('style');
 styleFixCursor.textContent = `
 #covidence-panel *:not(input):not(textarea):not(button) {
@@ -381,13 +358,12 @@ document.addEventListener("mouseup", function() {
 
 
 
-document.getElementById('summaryToggleIcon')?.addEventListener('click', () => {
-    const isHidden = summaryList.style.display === 'none';
-    summaryList.style.display = isHidden ? 'block' : 'none';
-
-    GM_setValue('summaryVisible', isHidden);
-});
-
+        toggleSummaryBtn.addEventListener('click', () => {
+            const isHidden = summaryList.style.display === 'none';
+            summaryList.style.display = isHidden ? 'block' : 'none';
+            toggleSummaryBtn.textContent = isHidden ? 'Hide decisions ▲' : 'Show decisions ▼';
+            GM_setValue('summaryVisible', isHidden);
+        });
 
         let studies = [],
             index = 0,
@@ -408,7 +384,7 @@ document.getElementById('summaryToggleIcon')?.addEventListener('click', () => {
             document.getElementById("topRightIcons").style.display = "flex";
             const visible = GM_getValue('summaryVisible', false);
             summaryList.style.display = visible ? 'block' : 'none';
-
+            toggleSummaryBtn.textContent = visible ? 'Hide decisions ▲' : 'Show decisions ▼';
             updateStudy();
         }
 
@@ -602,249 +578,7 @@ function updateSummary() {
         container.appendChild(toggleBtn);
         wrapper.appendChild(container);
         summaryList.appendChild(wrapper);
-    })
-// === AI Assistant Section inside #summaryList ===
-const aiWrapper = document.createElement("div");
-aiWrapper.style.marginTop = "20px";
-
-
-
-const content = document.createElement("div");
-content.style.display = "block";
-content.innerHTML = `
-  <div style="padding-top: 0; position: relative;">
-
-    <!-- Fixed top bar -->
-<div id="aiHeaderBar" style="
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
-">
-  <button id="runAIButton" style="
-    font-size: 13px;
-    font-family: inherit;
-    color: #2c3e50;
-    background-color: #f0f0f0;
-    border: none;
-    padding: 2px 0;
-    border-radius: 4px;
-    cursor: pointer;
-    user-select: none;
-    text-align: center;
-    flex-grow: 1;
-  ">🤖 Ask AI for This Study</button>
-
-<div id="togglePromptInputs" title="Toggle prompt settings" style="
-  font-size: 16px;
-  color: #007BFF;
-  cursor: pointer !important;     /* ← Force hand cursor */
-  margin-left: 8px;
-  user-select: none;
-  display: flex;
-  align-items: center;
-  padding: 2px;
-">⚙️</div>
-
-</div>
-
-    <div id="aiDecisionOutput" style="margin-top:6px; font-size:13px;"></div>
-
-
-
-    <!-- Scrollable content -->
-    <div id="aiInputsWrapper" style="display: none;">
-
-     <label style="display:block; margin-top:6px;">Study Inclusion Criteria (required):</label>
-      <textarea id="inclusionCriteriaInput" rows="3" style="width:100%; font-size:13px; margin-bottom:6px;" placeholder="Define your inclusion criteria. AI will make a decision based on them."></textarea>
-
-     <label style="display:block; margin-top:6px;">General Prompt for AI (optional):</label>
-      <textarea id="systemPromptInput" rows="3" style="width:100%; font-size:13px; margin-bottom:6px;" placeholder="e.g., You are a senior researcher. Keep answers short."></textarea>
-
-
-
-      <button id="loadAPIKeyBtn" style="width:100%; font-size:13px;">📂 Load API Key from File</button>
-      <input id="apiKeyFileInput" type="file" accept=".txt" style="display:none;" />
-      <div id="apiKeyStatus" style="margin: 6px 0; font-size: 13px; color: green;"></div>
-    </div>
-
-
-  </div>
-`;
-
-// Toggle the AI Prompt inputs visibility
-const togglePromptBtn = content.querySelector("#togglePromptInputs");
-const promptInputs = content.querySelector("#aiInputsWrapper");
-    let ledEffectTriggered = GM_getValue("ledEffectTriggered", false);
-function checkAndToggleLEDEffect() {
-  const runBtn = content.querySelector("#runAIButton");
-  const inclusionInput = content.querySelector("#inclusionCriteriaInput");
-  const inclusionText = inclusionInput ? inclusionInput.value.trim() : "";
-  const hasAPIKey = !!GM_getValue("openaiKeyFromFile", "").trim();
-  const wasTriggered = GM_getValue("ledEffectTriggered", false);
-
-  if (runBtn) {
-    if (inclusionText && hasAPIKey) {
-      runBtn.classList.add("led-border");
-
-      if (!wasTriggered) {
-        runBtn.classList.add("led-flash");
-        GM_setValue("ledEffectTriggered", true);
-
-        setTimeout(() => runBtn.classList.remove("led-flash"), 1000);
-      }
-    } else {
-      runBtn.classList.remove("led-border");
-      runBtn.classList.remove("led-flash");
-      GM_setValue("ledEffectTriggered", false);
-    }
-  }
-}
-
-
-
-togglePromptBtn.onclick = () => {
-  const isHidden = promptInputs.style.display === "none";
-  promptInputs.style.display = isHidden ? "block" : "none";
-  togglePromptBtn.textContent = isHidden ? "⚙️" : "⚙️";
-};
-
-
-
-aiWrapper.appendChild(content);
-summaryList.appendChild(aiWrapper);
-
-// Restore previous inputs
-const savedCriteria = GM_getValue("inclusionCriteriaText", "");
-    const savedPrompt = GM_getValue("customSystemPrompt", "");
-if (savedPrompt) {
-  content.querySelector("#systemPromptInput").value = savedPrompt;
-}
-if (savedCriteria) {
-  content.querySelector("#inclusionCriteriaInput").value = savedCriteria;
-}
-    checkAndToggleLEDEffect();
-if (openaiKeyFromFile) {
-  content.querySelector("#apiKeyStatus").textContent = "✅ API key loaded from file (saved)";
-}
-
-// Save new API key
-content.querySelector("#loadAPIKeyBtn").onclick = () => content.querySelector("#apiKeyFileInput").click();
-content.querySelector("#apiKeyFileInput").addEventListener("change", (event) => {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    openaiKeyFromFile = e.target.result.trim();
-    GM_setValue("openaiKeyFromFile", openaiKeyFromFile);
-    content.querySelector("#apiKeyStatus").textContent = "✅ API key loaded from file.";
-      checkAndToggleLEDEffect();
-  };
-
-  reader.onerror = () => {
-    content.querySelector("#apiKeyStatus").textContent = "❌ Failed to read API key file.";
-  };
-  reader.readAsText(file);
-});
-
-// Save inclusion criteria
-content.querySelector("#inclusionCriteriaInput").addEventListener("input", (e) => {
-  GM_setValue("inclusionCriteriaText", e.target.value);
-  checkAndToggleLEDEffect();
-});
-
-// Save system prompt
-content.querySelector("#systemPromptInput").addEventListener("input", (e) => {
-  GM_setValue("customSystemPrompt", e.target.value);
-});
-// Ask AI button
-content.querySelector("#runAIButton").onclick = async () => {
-    const { author, year } = extractAuthorAndYear();
-const output = content.querySelector("#aiDecisionOutput");
-
-
-  const criteria = content.querySelector("#inclusionCriteriaInput").value.trim();
-
-  const currentID = document.querySelector("#currentStudy")?.textContent?.replace("#", "");
-
-  if (!openaiKeyFromFile || !criteria) return alert("Please load your API key and enter inclusion criteria.");
-  const abstract = extractAbstractText();
-  if (!abstract) return output.textContent = "❌ Could not extract abstract.";
-
-  output.textContent = "⏳ Asking ChatGPT...";
-const systemPrompt = GM_getValue("customSystemPrompt", "You are an assistant screening research abstracts for inclusion based on user-defined criteria. Keep explanations short and simple.");
-
-  try {
-      const { author, year } = extractAuthorAndYear();
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${openaiKeyFromFile}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-4.1-nano",
-messages: [
-  { role: "system", content: systemPrompt },
-  {
-    role: "user",
-content:
-
-  `First Author: ${author}\n` +
-  `Publication Year: ${year}\n` +
-  `Abstract Text: ${abstract}\n\n` +
-  `Inclusion Criteria: ${criteria}\n\n` +
-  `Should this study be included in the review? Reply in this format: ${author} (${year}): your decision (Yes, No, or Maybe), followed by a short explanation under 3 sentences.`
-
-  }
-],
-        temperature: 0.2,
-      }),
     });
-
-    const data = await res.json();
-    const reply = data.choices?.[0]?.message?.content?.trim() || "No response.";
-      // ✅ Extract just "Yes", "No", or "Maybe" for IRR
-const decisionOnly = (reply.match(/\b(Yes|No|Maybe)\b/i) || [])[1] || "Maybe";
-
-output.innerHTML = `
-  💬 AI:
-  <span style="
-    display: inline-block;
-    filter: blur(5px);
-    user-select: none;
-    cursor: pointer;
-    transition: filter 0.3s ease;
-  " title="Click to reveal" onclick="this.style.filter='none'; this.style.cursor='default'; this.title='';">
-    <strong>${reply}</strong>
-  </span>
-  <div id="aiHintText" style="
-    font-size: 11px;
-    color: #777;
-    margin-top: 4px;
-    text-align: right;
-    padding-right: 10px;
-    width: 100%;
-  ">(Click to reveal AI response)</div>
-`;
-
-
-    if (currentID) {
-      const aiDecisions = JSON.parse(GM_getValue("chatgpt_decisions", "{}"));
-      aiDecisions[currentID] = decisionOnly;
-// 📝 Save the full explanation separately (optional but useful)
-const aiExplanations = JSON.parse(GM_getValue("chatgpt_explanations", "{}"));
-aiExplanations[currentID] = reply;
-GM_setValue("chatgpt_explanations", JSON.stringify(aiExplanations));
-      GM_setValue("chatgpt_decisions", JSON.stringify(aiDecisions));
-    }
-  } catch (err) {
-    console.error(err);
-    output.textContent = "❌ Error calling ChatGPT.";
-  }
-};
-checkAndToggleLEDEffect();
-    ;
 }
 
 
@@ -948,7 +682,7 @@ if (startTime) {
     const totalM = Math.floor((totalSec % 3600) / 60);
     const totalS = totalSec % 60;
     const totalTimeStr = `${totalH}h ${totalM}m ${totalS}s`;
-sessionMsg = `\n⏱ Session time: ${sessionTimeStr}\n🕒 Total time: ${totalTimeStr}`;
+sessionMsg = `\n\n🕒 Session time: ${sessionTimeStr}\n⏱ Total time: ${totalTimeStr}`;
 
 
 
@@ -968,28 +702,21 @@ const maybePct = totalCount ? ((maybeCount / totalCount) * 100).toFixed(1) : "0.
 const yesPct = totalCount ? ((yesCount / totalCount) * 100).toFixed(1) : "0.0";
 const noPct = totalCount ? ((noCount / totalCount) * 100).toFixed(1) : "0.0";
 
-const aiDecisions = JSON.parse(GM_getValue("chatgpt_decisions", "{}"));
-const irr = computeIRR(decisions, aiDecisions, studies);
-
 alert(
   "You've reached the end of your study list!" + sessionMsg +
     `\n⏳ Avg decision time: ${avgDecisionTimeSec}s` +
-    `\n🤖 Interrater Reliability with ChatGPT: ${irr}` +
   "\n\n📊 Decision breakdown:\n" +
   `• Maybe: ${maybeCount} (${maybePct}%)\n` +
   `• Yes: ${yesCount} (${yesPct}%)\n` +
   `• No: ${noCount} (${noPct}%)`
+
 );
 
 
-const aiExplanations = JSON.parse(GM_getValue("chatgpt_explanations", "{}"));
-const csvHeader = "Study ID,User Decision,ChatGPT Decision,ChatGPT Reason";
-const csvRows = studies.map(id => {
-    const userVote = decisions[id] || "";
-    const aiVote = aiDecisions[id] || "";
-    const reason = aiExplanations[id] ? `"${aiExplanations[id].replace(/"/g, '""')}"` : "";
-    return `${id},${userVote},${aiVote},${reason}`;
-});
+
+
+                        const csvHeader = "Study ID,Decision";
+                        const csvRows = studies.filter(id => decisions[id]).map(id => `${id},${decisions[id]}`);
                         const csvContent = "data:text/csv;charset=utf-8," + [csvHeader, ...csvRows].join("\n");
                         const encodedUri = encodeURI(csvContent);
                         const link = document.createElement("a");
@@ -1027,35 +754,22 @@ resetBtn.onclick = function() {
             GM_setValue('studyList', '');
             GM_setValue('studyIndex', 0);
             GM_setValue('decisions', '{}');
-    GM_setValue("chatgpt_decisions", '{}');
     GM_setValue("sessionStartTime", null);
             location.reload();
         };
 
-exportBtn.onclick = function() {
-    const aiDecisions = JSON.parse(GM_getValue("chatgpt_decisions", "{}"));
-    const aiExplanations = JSON.parse(GM_getValue("chatgpt_explanations", "{}"));
-    const csvHeader = "Study ID,User Decision,ChatGPT Decision,ChatGPT Reason";
-    const csvRows = studies.map(id => {
-        const userVote = decisions[id] || "";
-        const aiVote = aiDecisions[id] || "";
-        const reason = aiExplanations[id]
-            ? `"${aiExplanations[id].replace(/"/g, '""')}"`
-            : "";
-        return `${id},${userVote},${aiVote},${reason}`;
-    });
-
-    const csvContent = "data:text/csv;charset=utf-8," + [csvHeader, ...csvRows].join("\n");
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "covidence_decisions.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-};
-
-
+        exportBtn.onclick = function() {
+            const csvHeader = "Study ID,Decision";
+            const csvRows = studies.filter(id => decisions[id]).map(id => `${id},${decisions[id]}`);
+            const csvContent = "data:text/csv;charset=utf-8," + [csvHeader, ...csvRows].join("\n");
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "covidence_decisions.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
 
         panelYesBtn.onclick = () => simulateDecision("Yes");
         panelNoBtn.onclick = () => simulateDecision("No");
@@ -1078,7 +792,118 @@ exportBtn.onclick = function() {
 
         const addKeywordsBtn = panel.querySelector('#addKeywordsBtn');
         const keywordTags = panel.querySelector('#keywordTags');
+        // === AI Assistant Toggle Section (non-flickering +/– version) ===
+const aiWrapper = document.createElement("div");
+aiWrapper.style.marginTop = "10px";
 
+const toggleBtn = document.createElement("div");
+toggleBtn.textContent = GM_getValue("aiPanelOpen", false) ? "[-] AI Assistant (Advanced)" : "[+] AI Assistant (Advanced)";
+toggleBtn.style.cursor = "pointer";
+toggleBtn.style.color = "#007BFF";
+toggleBtn.style.fontSize = "13px";
+toggleBtn.style.marginBottom = "4px";
+toggleBtn.style.fontWeight = "bold";
+
+const content = document.createElement("div");
+content.style.display = GM_getValue("aiPanelOpen", false) ? "block" : "none";
+content.innerHTML = `
+  <label style="display:block; margin-top:6px;">Inclusion Criteria:</label>
+  <textarea id="inclusionCriteriaInput" rows="3" style="width:100%; font-size:13px; margin-bottom:6px;" placeholder="Define your inclusion criteria..."></textarea>
+  <button id="loadAPIKeyBtn" style="width:100%; font-size:13px;">📂 Load API Key from File</button>
+  <input id="apiKeyFileInput" type="file" accept=".txt" style="display:none;" />
+  <div id="apiKeyStatus" style="margin: 6px 0; font-size: 13px; color: green;"></div>
+  <button id="runAIButton" style="width:100%; font-size:13px;">Ask AI for This Study</button>
+  <div id="aiDecisionOutput" style="margin-top:6px; font-size:13px;"></div>
+`;
+
+toggleBtn.onclick = () => {
+  const isOpen = content.style.display === "block";
+  content.style.display = isOpen ? "none" : "block";
+  toggleBtn.textContent = isOpen ? "[+] AI Assistant (Advanced)" : "[-] AI Assistant (Advanced)";
+  GM_setValue("aiPanelOpen", !isOpen);
+};
+
+aiWrapper.appendChild(toggleBtn);
+aiWrapper.appendChild(content);
+
+if (controls && controls.style.display !== "none") {
+  panel.appendChild(aiWrapper);
+}
+
+// Restore previous inputs
+const savedCriteria = GM_getValue("inclusionCriteriaText", "");
+if (savedCriteria) {
+  content.querySelector("#inclusionCriteriaInput").value = savedCriteria;
+}
+if (openaiKeyFromFile) {
+  content.querySelector("#apiKeyStatus").textContent = "✅ API key loaded from file (saved)";
+}
+
+// Save new API key
+content.querySelector("#loadAPIKeyBtn").onclick = () => content.querySelector("#apiKeyFileInput").click();
+content.querySelector("#apiKeyFileInput").addEventListener("change", (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    openaiKeyFromFile = e.target.result.trim();
+    GM_setValue("openaiKeyFromFile", openaiKeyFromFile);
+    content.querySelector("#apiKeyStatus").textContent = "✅ API key loaded from file.";
+  };
+  reader.onerror = () => {
+    content.querySelector("#apiKeyStatus").textContent = "❌ Failed to read API key file.";
+  };
+  reader.readAsText(file);
+});
+
+// Save inclusion criteria
+content.querySelector("#inclusionCriteriaInput").addEventListener("input", (e) => {
+  GM_setValue("inclusionCriteriaText", e.target.value);
+});
+
+// Ask AI button
+content.querySelector("#runAIButton").onclick = async () => {
+  const criteria = content.querySelector("#inclusionCriteriaInput").value.trim();
+  const output = content.querySelector("#aiDecisionOutput");
+  const currentID = document.querySelector("#currentStudy")?.textContent?.replace("#", "");
+
+  if (!openaiKeyFromFile || !criteria) return alert("Please load your API key and enter inclusion criteria.");
+  const abstract = extractAbstractText();
+  if (!abstract) return output.textContent = "❌ Could not extract abstract.";
+
+  output.textContent = "⏳ Asking ChatGPT...";
+
+  try {
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${openaiKeyFromFile}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-4",
+        messages: [
+          { role: "system", content: "You are an assistant screening research abstracts for inclusion based on user-defined criteria. Keep explanations short and simple." },
+          { role: "user", content: `Abstract: ${abstract}\n\nInclusion Criteria: ${criteria}\n\nShould this study be included in the review? Reply with your decision (Yes, No, or Maybe), followed by a short explanation in ≤ 3 sentences.` }
+        ],
+        temperature: 0.2,
+      }),
+    });
+
+    const data = await res.json();
+    const reply = data.choices?.[0]?.message?.content?.trim() || "No response.";
+    output.innerHTML = `💬 AI: <strong>${reply}</strong>`;
+
+    if (currentID) {
+      const aiDecisions = JSON.parse(GM_getValue("chatgpt_decisions", "{}"));
+      aiDecisions[currentID] = reply;
+      GM_setValue("chatgpt_decisions", JSON.stringify(aiDecisions));
+    }
+  } catch (err) {
+    console.error(err);
+    output.textContent = "❌ Error calling ChatGPT.";
+  }
+};
 
         const savedTags = JSON.parse(GM_getValue('keywordTags', '[]'));
         renderKeywordTags(savedTags);
@@ -1201,25 +1026,6 @@ exportBtn.onclick = function() {
         }
 
     }
-const ledStyle = document.createElement("style");
-ledStyle.textContent = `
-@keyframes ledFlashLimited {
-  0%, 100% { box-shadow: 0 0 0px 0px rgba(33, 150, 243, 0.8); }
-  50% { box-shadow: 0 0 12px 6px rgba(33, 150, 243, 0.5); }
-}
-
-#runAIButton.led-flash {
-  animation: ledFlashLimited 1s ease-in-out 1;
-}
-
-#runAIButton.led-border {
-  border: 1px solid rgba(33, 150, 243, 0.9) !important;
-}
-`;
-
-document.head.appendChild(ledStyle);
-
-
 
 window.addEventListener('load', () => {
     setTimeout(createPanel, 5);
@@ -1385,7 +1191,7 @@ if (startTime) {
     const totalM = Math.floor((totalSec % 3600) / 60);
     const totalS = totalSec % 60;
     const totalTimeStr = `${totalH}h ${totalM}m ${totalS}s`;
-    sessionMsg = `\n⏱ Session time: ${sessionTimeStr}\n🕒 Total time: ${totalTimeStr}`;
+    sessionMsg = `\n\n🕒 Session time: ${sessionTimeStr}\n⏱ Total time: ${totalTimeStr}`;
 
 
     GM_setValue("sessionStartTime", null);
@@ -1393,8 +1199,6 @@ if (startTime) {
                     const avgDecisionTimeSec = totalDecisionsMade > 0
     ? (totalDecisionTimeMs / totalDecisionsMade / 1000).toFixed(1)
     : "0.0";
-const aiDecisions = JSON.parse(GM_getValue("chatgpt_decisions", "{}"));
-const irr = computeIRR(decisions, aiDecisions, studies);
 
 
 const maybeCount = Object.values(decisions).filter(v => v === "Maybe").length;
@@ -1409,7 +1213,6 @@ const noPct = totalCount ? ((noCount / totalCount) * 100).toFixed(1) : "0.0";
 alert(
   "You've reached the end of your study list!" + sessionMsg +
      `\n⏳ Avg decision time: ${avgDecisionTimeSec}s` +
-     `\n🤖 Interrater Reliability with ChatGPT: ${irr}` +
   "\n\n📊 Decision breakdown:\n" +
   `• Maybe: ${maybeCount} (${maybePct}%)\n` +
   `• Yes: ${yesCount} (${yesPct}%)\n` +
@@ -1421,15 +1224,8 @@ alert(
 
 
                     // ✅ Export CSV
-const aiExplanations = JSON.parse(GM_getValue("chatgpt_explanations", "{}"));
-const csvHeader = "Study ID,User Decision,ChatGPT Decision,ChatGPT Reason";
-const csvRows = studies.map(id => {
-    const userVote = decisions[id] || "";
-    const aiVote = aiDecisions[id] || "";
-    const reason = aiExplanations[id] ? `"${aiExplanations[id].replace(/"/g, '""')}"` : "";
-    return `${id},${userVote},${aiVote},${reason}`;
-});
-
+                    const csvHeader = "Study ID,Decision";
+                    const csvRows = studies.filter(id => decisions[id]).map(id => `${id},${decisions[id]}`);
                     const csvContent = "data:text/csv;charset=utf-8," + [csvHeader, ...csvRows].join("\n");
                     const encodedUri = encodeURI(csvContent);
                     const link = document.createElement("a");
@@ -1528,40 +1324,5 @@ function extractAbstractText() {
   );
   return fallback?.textContent.trim() || '';
 }
-
-function computeIRR(userMap, aiMap, idList) {
-    let agree = 0;
-    let total = 0;
-
-    for (const id of idList) {
-        const userVote = userMap[id];
-        const aiVote = aiMap[id];
-        if (["Yes", "No", "Maybe"].includes(userVote) && ["Yes", "No", "Maybe"].includes(aiVote)) {
-            total++;
-            if (userVote === aiVote) agree++;
-        }
-    }
-
-    return total ? (agree / total).toFixed(2) : "N/A";
-}
-function extractAuthorAndYear() {
-  const allText = document.body.innerText;
-
-  // Find the year
-  const yearMatch = allText.match(/\b(19|20)\d{2}\b/);  // first 4-digit year
-  const year = yearMatch ? yearMatch[0] : "";
-
-  // Match single or multiple author lines (semicolon optional)
-  const authorLineMatch = allText.match(/^([A-ZÄÖÅa-zäöå\-']+, [A-ZÄÖÅa-zäöå.\-']+);?/m);
-  const fullAuthor = authorLineMatch ? authorLineMatch[1] : "";
-
-  const lastNameOnly = fullAuthor.split(",")[0].trim();
-
-  return { author: lastNameOnly, year };
-}
-
-
-
-
 
 })();

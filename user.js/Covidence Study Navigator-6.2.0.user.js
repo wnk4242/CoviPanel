@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Covidence Study Navigator
 // @namespace    http://tampermonkey.net/
-// @version      6.1.8
+// @version      6.2.0
 // @description  Draggable Covidence panel with saved position, decision logging, CSV export, color-coded decision display.
 // @match        *://*.covidence.org/*
 // @grant        GM_setValue
@@ -621,19 +621,19 @@ content.innerHTML = `
   justify-content: space-between;
   margin-bottom: 8px;
 ">
-  <button id="runAIButton" style="
-    font-size: 13px;
-    font-family: inherit;
-    color: #2c3e50;
-    background-color: #f0f0f0;
-    border: none;
-    padding: 2px 0;
-    border-radius: 4px;
-    cursor: pointer;
-    user-select: none;
-    text-align: center;
-    flex-grow: 1;
-  ">🤖 Ask AI for This Study</button>
+<button id="runAIButton" style="
+  font-size: 13px;
+  font-family: inherit;
+  color: #2c3e50;
+  background-color: #f5f5f5;
+  border: 1px solid #ccc;
+  padding: 2px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  user-select: none;
+  text-align: center;
+  flex-grow: 1;
+">🤖 Ask AI for This Study</button>
 
 <div id="togglePromptInputs" title="Toggle prompt settings" style="
   font-size: 16px;
@@ -663,7 +663,31 @@ content.innerHTML = `
 
 
 
-      <button id="loadAPIKeyBtn" style="width:100%; font-size:13px;">📂 Load API Key from File</button>
+<div style="display: flex; gap: 6px; align-items: center;">
+  <button id="loadAPIKeyBtn" style="
+    flex: 1;
+    font-size: 13px;
+    padding: 4px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background: #f5f5f5;
+    cursor: pointer;
+    line-height: 1;
+  ">📂 Load API Key from File</button>
+  <button id="clearAPIKeyBtn" title="Clear stored key" style="
+    font-size: 15px;
+    padding: 4px;
+    background: none;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    line-height: 1;
+  ">🗑️</button>
+</div>
+
+
+
+
       <input id="apiKeyFileInput" type="file" accept=".txt" style="display:none;" />
       <div id="apiKeyStatus" style="margin: 6px 0; font-size: 13px; color: green;"></div>
     </div>
@@ -732,20 +756,52 @@ if (openaiKeyFromFile) {
 content.querySelector("#loadAPIKeyBtn").onclick = () => content.querySelector("#apiKeyFileInput").click();
 content.querySelector("#apiKeyFileInput").addEventListener("change", (event) => {
   const file = event.target.files[0];
+  const statusEl = content.querySelector("#apiKeyStatus");
   if (!file) return;
+
   const reader = new FileReader();
-  reader.onload = (e) => {
-    openaiKeyFromFile = e.target.result.trim();
+reader.onload = (e) => {
+  const statusEl = content.querySelector("#apiKeyStatus");
+  const raw = e.target.result || "";
+  const trimmed = raw.trim().split(/\r?\n/)[0].trim(); // Take only the first line
+
+  // Store the trimmed key
+  openaiKeyFromFile = trimmed;
+
+  // Validation: starts with sk- and at least 20 characters after sk-
+  const isValid = /^sk-[A-Za-z0-9-_]{20,}/.test(trimmed);
+
+  if (isValid) {
     GM_setValue("openaiKeyFromFile", openaiKeyFromFile);
-    content.querySelector("#apiKeyStatus").textContent = "✅ API key loaded from file.";
-      checkAndToggleLEDEffect();
-  };
+    statusEl.style.color = "green";
+    statusEl.textContent = "✅ API key loaded from file.";
+  } else {
+    openaiKeyFromFile = "";
+    GM_setValue("openaiKeyFromFile", "");
+    statusEl.style.color = "red";
+    statusEl.textContent = "❌ Invalid API key format. Please upload a valid key.";
+  }
+
+  checkAndToggleLEDEffect();
+};
+
 
   reader.onerror = () => {
-    content.querySelector("#apiKeyStatus").textContent = "❌ Failed to read API key file.";
+    statusEl.style.color = "red";
+    statusEl.textContent = "❌ Failed to read API key file.";
   };
+
   reader.readAsText(file);
 });
+// ✅ Clear API Key logic
+content.querySelector("#clearAPIKeyBtn").addEventListener("click", () => {
+  GM_setValue("openaiKeyFromFile", "");
+  openaiKeyFromFile = "";
+  content.querySelector("#apiKeyStatus").textContent = "❌ API key cleared.";
+  content.querySelector("#apiKeyStatus").style.color = "red";
+  checkAndToggleLEDEffect();
+});
+
 
 // Save inclusion criteria
 content.querySelector("#inclusionCriteriaInput").addEventListener("input", (e) => {

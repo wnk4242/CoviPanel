@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Covidence Study Navigator
 // @namespace    http://tampermonkey.net/
-// @version      6.1.8
+// @version      6.1.2
 // @description  Draggable Covidence panel with saved position, decision logging, CSV export, color-coded decision display.
 // @match        *://*.covidence.org/*
 // @grant        GM_setValue
@@ -275,9 +275,6 @@ toggleDotsStyle.textContent = `
 `;
 
 document.head.appendChild(toggleDotsStyle);
-
-
-
 
 const styleFixCursor = document.createElement('style');
 styleFixCursor.textContent = `
@@ -605,108 +602,38 @@ function updateSummary() {
     })
 // === AI Assistant Section inside #summaryList ===
 const aiWrapper = document.createElement("div");
-aiWrapper.style.marginTop = "20px";
+aiWrapper.style.marginTop = "14px";
 
 
 
 const content = document.createElement("div");
 content.style.display = "block";
 content.innerHTML = `
-  <div style="padding-top: 0; position: relative;">
+  <div style="margin-bottom: 4px; text-align: center; font-size: 13px; color: #007BFF; cursor: pointer;" id="togglePromptInputs">AI Prompt Settings 🛠️</div>
 
-    <!-- Fixed top bar -->
-<div id="aiHeaderBar" style="
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
-">
-  <button id="runAIButton" style="
-    font-size: 13px;
-    font-family: inherit;
-    color: #2c3e50;
-    background-color: #f0f0f0;
-    border: none;
-    padding: 2px 0;
-    border-radius: 4px;
-    cursor: pointer;
-    user-select: none;
-    text-align: center;
-    flex-grow: 1;
-  ">🤖 Ask AI for This Study</button>
+  <div id="aiInputsWrapper" style="display: none;">
+    <label style="display:block; margin-top:6px;">General Prompt for AI:</label>
+    <textarea id="systemPromptInput" rows="3" style="width:100%; font-size:13px; margin-bottom:6px;" placeholder="e.g., You are a senior researcher with 20 years of experience. Keep answers short. Yes = strong match, No = out of scope."></textarea>
 
-<div id="togglePromptInputs" title="Toggle prompt settings" style="
-  font-size: 16px;
-  color: #007BFF;
-  cursor: pointer !important;     /* ← Force hand cursor */
-  margin-left: 8px;
-  user-select: none;
-  display: flex;
-  align-items: center;
-  padding: 2px;
-">⚙️</div>
-
-</div>
-
-    <div id="aiDecisionOutput" style="margin-top:6px; font-size:13px;"></div>
-
-
-
-    <!-- Scrollable content -->
-    <div id="aiInputsWrapper" style="display: none;">
-
-     <label style="display:block; margin-top:6px;">Study Inclusion Criteria (required):</label>
-      <textarea id="inclusionCriteriaInput" rows="3" style="width:100%; font-size:13px; margin-bottom:6px;" placeholder="Define your inclusion criteria. AI will make a decision based on them."></textarea>
-
-     <label style="display:block; margin-top:6px;">General Prompt for AI (optional):</label>
-      <textarea id="systemPromptInput" rows="3" style="width:100%; font-size:13px; margin-bottom:6px;" placeholder="e.g., You are a senior researcher. Keep answers short."></textarea>
-
-
-
-      <button id="loadAPIKeyBtn" style="width:100%; font-size:13px;">📂 Load API Key from File</button>
-      <input id="apiKeyFileInput" type="file" accept=".txt" style="display:none;" />
-      <div id="apiKeyStatus" style="margin: 6px 0; font-size: 13px; color: green;"></div>
-    </div>
-
-
+    <label style="display:block; margin-top:6px;">Study Inclusion Criteria:</label>
+    <textarea id="inclusionCriteriaInput" rows="3" style="width:100%; font-size:13px; margin-bottom:6px;" placeholder="Define your inclusion criteria..."></textarea>
+     <button id="loadAPIKeyBtn" style="width:100%; font-size:13px;">📂 Load API Key from File</button>
+  <input id="apiKeyFileInput" type="file" accept=".txt" style="display:none;" />
+  <div id="apiKeyStatus" style="margin: 6px 0; font-size: 13px; color: green;"></div>
   </div>
-`;
 
+
+  <button id="runAIButton" style="width:100%; font-size:13px;">Ask AI for This Study</button>
+  <div id="aiDecisionOutput" style="margin-top:6px; font-size:13px;"></div>
+`;
 // Toggle the AI Prompt inputs visibility
 const togglePromptBtn = content.querySelector("#togglePromptInputs");
 const promptInputs = content.querySelector("#aiInputsWrapper");
-    let ledEffectTriggered = GM_getValue("ledEffectTriggered", false);
-function checkAndToggleLEDEffect() {
-  const runBtn = content.querySelector("#runAIButton");
-  const inclusionInput = content.querySelector("#inclusionCriteriaInput");
-  const inclusionText = inclusionInput ? inclusionInput.value.trim() : "";
-  const hasAPIKey = !!GM_getValue("openaiKeyFromFile", "").trim();
-  const wasTriggered = GM_getValue("ledEffectTriggered", false);
-
-  if (runBtn) {
-    if (inclusionText && hasAPIKey) {
-      runBtn.classList.add("led-border");
-
-      if (!wasTriggered) {
-        runBtn.classList.add("led-flash");
-        GM_setValue("ledEffectTriggered", true);
-
-        setTimeout(() => runBtn.classList.remove("led-flash"), 1000);
-      }
-    } else {
-      runBtn.classList.remove("led-border");
-      runBtn.classList.remove("led-flash");
-      GM_setValue("ledEffectTriggered", false);
-    }
-  }
-}
-
-
 
 togglePromptBtn.onclick = () => {
   const isHidden = promptInputs.style.display === "none";
   promptInputs.style.display = isHidden ? "block" : "none";
-  togglePromptBtn.textContent = isHidden ? "⚙️" : "⚙️";
+  togglePromptBtn.textContent = isHidden ? "AI Prompt Settings 🛠️" : "AI Prompt Settings 🛠️";
 };
 
 
@@ -723,7 +650,6 @@ if (savedPrompt) {
 if (savedCriteria) {
   content.querySelector("#inclusionCriteriaInput").value = savedCriteria;
 }
-    checkAndToggleLEDEffect();
 if (openaiKeyFromFile) {
   content.querySelector("#apiKeyStatus").textContent = "✅ API key loaded from file (saved)";
 }
@@ -738,9 +664,7 @@ content.querySelector("#apiKeyFileInput").addEventListener("change", (event) => 
     openaiKeyFromFile = e.target.result.trim();
     GM_setValue("openaiKeyFromFile", openaiKeyFromFile);
     content.querySelector("#apiKeyStatus").textContent = "✅ API key loaded from file.";
-      checkAndToggleLEDEffect();
   };
-
   reader.onerror = () => {
     content.querySelector("#apiKeyStatus").textContent = "❌ Failed to read API key file.";
   };
@@ -750,9 +674,7 @@ content.querySelector("#apiKeyFileInput").addEventListener("change", (event) => 
 // Save inclusion criteria
 content.querySelector("#inclusionCriteriaInput").addEventListener("input", (e) => {
   GM_setValue("inclusionCriteriaText", e.target.value);
-  checkAndToggleLEDEffect();
 });
-
 // Save system prompt
 content.querySelector("#systemPromptInput").addEventListener("input", (e) => {
   GM_setValue("customSystemPrompt", e.target.value);
@@ -818,16 +740,8 @@ output.innerHTML = `
   " title="Click to reveal" onclick="this.style.filter='none'; this.style.cursor='default'; this.title='';">
     <strong>${reply}</strong>
   </span>
-  <div id="aiHintText" style="
-    font-size: 11px;
-    color: #777;
-    margin-top: 4px;
-    text-align: right;
-    padding-right: 10px;
-    width: 100%;
-  ">(Click to reveal AI response)</div>
+  <div style="font-size: 11px; color: #777; margin-top: 4px;">(Click to reveal AI response)</div>
 `;
-
 
     if (currentID) {
       const aiDecisions = JSON.parse(GM_getValue("chatgpt_decisions", "{}"));
@@ -843,8 +757,7 @@ GM_setValue("chatgpt_explanations", JSON.stringify(aiExplanations));
     output.textContent = "❌ Error calling ChatGPT.";
   }
 };
-checkAndToggleLEDEffect();
-    ;
+;
 }
 
 
@@ -1201,25 +1114,6 @@ exportBtn.onclick = function() {
         }
 
     }
-const ledStyle = document.createElement("style");
-ledStyle.textContent = `
-@keyframes ledFlashLimited {
-  0%, 100% { box-shadow: 0 0 0px 0px rgba(33, 150, 243, 0.8); }
-  50% { box-shadow: 0 0 12px 6px rgba(33, 150, 243, 0.5); }
-}
-
-#runAIButton.led-flash {
-  animation: ledFlashLimited 1s ease-in-out 1;
-}
-
-#runAIButton.led-border {
-  border: 1px solid rgba(33, 150, 243, 0.9) !important;
-}
-`;
-
-document.head.appendChild(ledStyle);
-
-
 
 window.addEventListener('load', () => {
     setTimeout(createPanel, 5);

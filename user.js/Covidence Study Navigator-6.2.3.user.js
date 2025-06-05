@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Covidence Study Navigator
 // @namespace    http://tampermonkey.net/
-// @version      6.1.8
+// @version      6.2.3
 // @description  Draggable Covidence panel with saved position, decision logging, CSV export, color-coded decision display.
 // @match        *://*.covidence.org/*
 // @grant        GM_setValue
@@ -47,6 +47,108 @@ const LEVEL_DETAILS = {
   "Professor 🧙‍♂️": { desc: "Wizard of academia.", emoji: "🧙‍♂️" },
   "Emeritus Prof. 🥂": { desc: "Retired. Toasting to freedom.", emoji: "🥂" }
 };
+
+
+function toggleSummary() {
+  const prog = document.getElementById("lifetimeProgressContainer");
+  const show = prog?.style.display === "none";
+  if (prog) prog.style.display = show ? "" : "none";
+  GM_setValue("showSummary", show);
+}
+
+
+function toggleAISection() {
+  const aiWrapper = document.getElementById("aiSectionContainer");
+  if (aiWrapper) {
+    const show = aiWrapper.style.display === "none";
+    aiWrapper.style.display = show ? "" : "none";
+    GM_setValue("showAI", show);
+  }
+}
+
+
+function toggleBothSections() {
+  const prog = document.getElementById("lifetimeProgressContainer");
+  const summary = document.getElementById("decisionSummaryContainer");
+  const ai = document.getElementById("aiSectionContainer");
+
+  const anyHidden = [prog, summary, ai].some(el => el?.style.display === "none");
+
+  if (prog) prog.style.display = anyHidden ? "" : "none";
+  if (summary) summary.style.display = anyHidden ? "" : "none";
+  if (ai) ai.style.display = anyHidden ? "" : "none";
+
+  GM_setValue("showSummary", anyHidden);
+  GM_setValue("showAI", anyHidden);
+}
+
+
+function createFloatingToggleMenu(targetBtn) {
+  document.getElementById("floatingToggleMenu")?.remove();
+
+  const menu = document.createElement("div");
+  menu.id = "floatingToggleMenu";
+  menu.style.cssText = `
+    position: absolute;
+    background: #f9f9f9;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    padding: 6px 0;
+    z-index: 9999;
+    user-select: none;
+    font-family: sans-serif;
+  `;
+
+const options = [
+  { label: "Toggle Summary", fn: toggleSummary },
+  { label: "Toggle AI Section", fn: toggleAISection },
+  {
+    label: "Toggle Decision Counts",
+    fn: () => {
+      const decisionSummary = document.getElementById("decisionSummaryContainer");
+      if (decisionSummary) {
+        decisionSummary.style.display = decisionSummary.style.display === "none" ? "" : "none";
+      }
+    }
+  }
+];
+
+
+  options.forEach(({ label, fn }) => {
+    const btn = document.createElement("div");
+    btn.textContent = label;
+    btn.style.cssText = `
+      padding: 6px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      white-space: nowrap;
+    `;
+    btn.onmouseenter = () => btn.style.background = "#eee";
+    btn.onmouseleave = () => btn.style.background = "transparent";
+    btn.onclick = () => {
+      fn();
+      menu.remove();
+    };
+    menu.appendChild(btn);
+  });
+
+  const rect = targetBtn.getBoundingClientRect();
+  menu.style.left = rect.left + window.scrollX + "px";
+  menu.style.top = rect.bottom + window.scrollY + 4 + "px";
+
+  document.body.appendChild(menu);
+
+  const removeMenu = (e) => {
+    if (!menu.contains(e.target) && e.target !== targetBtn) {
+      menu.remove();
+      document.removeEventListener("mousedown", removeMenu);
+    }
+  };
+  document.addEventListener("mousedown", removeMenu);
+}
+
+
 
 function updateLifetimeProgressUI() {
     const count = parseInt(GM_getValue("totalStudiesScreened", "0"), 10);
@@ -217,18 +319,20 @@ toast.innerHTML = `
 
 
         panel.innerHTML = `
-            <div id="covidence-header" style="font-size: 15px; font-weight: bold; cursor: move;">Covidence Study Navigator</div>
-
-            <div id="topRightIcons" style="position: absolute; top: 11px; right: 10px; display: none; gap: 7px; flex-direction: row;">
-              <button id="exportBtn" title="Export decisions to .csv" style="background:none; border:none; cursor:pointer; font-size:22px;" aria-label="Export decisions to .csv">🖫</button>
-              <button id="resetBtn" title="Start a new screening session" style="background:none; border:none; cursor:pointer; font-size:21px;" aria-label="Start a new screening session">⟳</button>
-            </div>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+  <div id="covidence-header" style="font-size: 15px; font-weight: bold; cursor: move;">Covidence Panel</div>
+  <div id="topRightIcons" style="display: none; gap: 7px; flex-direction: row; align-items: center;">
+    <button id="returnBtn" title="Return to current study" style="background:none; border:none; cursor:pointer; font-size:22px;" aria-label="Return to current study">◉</button>
+    <button id="exportBtn" title="Export decisions to .csv" style="background:none; border:none; cursor:pointer; font-size:20px;" aria-label="Export decisions to .csv">🖫</button>
+    <button id="resetBtn" title="Start a new screening session" style="background:none; border:none; cursor:pointer; font-size:19px;" aria-label="Start a new screening session">⟳</button>
+  </div>
+</div>
             <textarea id='studyListInput' rows='6' style='width:100%; margin-top:10px; font-size: 13px;' placeholder='Enter study IDs to start screening. \nYou may enter study IDs in three ways: \n1) Pasting them directly from Excel \n2) Using "-" and "," (e.g., 3-6 or 3,4,5,6) \n3) Clicking the "Detect" button below \n'></textarea>
 
             <button id='startBtn' style='margin-top:10px; width: 100%;'>▶ Begin Screening</button>
             <div id='studyControls' style='display:none; margin-top:15px;'>
               <div style="margin-bottom: 5px;">Current study: <span id='currentStudy'>?</span><span id='progressInline' style='margin-left: 8px; font-size: 14px; color: #555;'></span>
-  <button id='skipBtn' title='Skip this study' style='margin-left: 6px; background: none; border: none; font-size: 16px; cursor: not-allowed; opacity: 0.5;' disabled>⏭</button>
+
               </div>              <div style="margin-bottom: 12px; height: 10px; background: #eee; border-radius: 4px;">
                 <div id="progressBar" style="height: 100%; background: #4caf50; width: 0%; border-radius: 4px;"></div>
               </div>
@@ -255,7 +359,7 @@ toast.innerHTML = `
 
 <div id='summaryList' style='display:none; font-size: 12px; line-height: 1.4;'>
   <div id="lifetimeProgressContainer" style="height: 48px;"></div>
-  <div id="decisionSummaryContainer" style="min-height: 36px;"></div>
+  <div id="decisionSummaryContainer" style="min-height: 36px; margin-top: 20px;"></div>
 </div>`;
 
         document.body.appendChild(panel);
@@ -289,7 +393,12 @@ document.head.appendChild(styleFixCursor);
       let isDragging = false, offsetX, offsetY;
 panel.addEventListener("mousedown", function(e) {
     // Prevent drag when clicking inside input, textarea, or button
-    if (["textarea", "input", "button"].includes(e.target.tagName.toLowerCase())) return;
+  if (
+  ["textarea", "input", "button"].includes(e.target.tagName.toLowerCase()) ||
+  e.target.id === "summaryToggleIcon" ||
+  e.target.closest("#floatingToggleMenu")
+) return;
+
     isDragging = true;
     offsetX = e.clientX - panel.offsetLeft;
     offsetY = e.clientY - panel.offsetTop;
@@ -343,8 +452,8 @@ document.addEventListener("mouseup", function() {
         const progressInline = panel.querySelector('#progressInline');
         const summaryList = panel.querySelector('#summaryList');
         const toggleSummaryBtn = panel.querySelector('#toggleSummaryBtn');
-        const skipBtn = panel.querySelector('#skipBtn');
 
+const returnBtn = panel.querySelector('#returnBtn');
         function simulateEnter() {
             const searchBox = document.querySelector("input[placeholder='Search studies']");
             if (searchBox && searchBox.value.startsWith("#")) {
@@ -371,22 +480,37 @@ document.addEventListener("mouseup", function() {
                 btn.style.cursor = shouldDisable ? "not-allowed" : "pointer";
             });
 
-            if (skipBtn) {
-                const allDisabled = [panelYesBtn, panelNoBtn, panelMaybeBtn].every(btn => btn.disabled);
-                skipBtn.disabled = !allDisabled;
-                skipBtn.style.opacity = allDisabled ? '1' : '0.5';
-                skipBtn.style.cursor = allDisabled ? 'pointer' : 'not-allowed';
-            }
+
         }
 
 
 
-document.getElementById('summaryToggleIcon')?.addEventListener('click', () => {
-    const isHidden = summaryList.style.display === 'none';
-    summaryList.style.display = isHidden ? 'block' : 'none';
+const tripleDotBtn = document.getElementById("summaryToggleIcon");
+if (tripleDotBtn) {
+  tripleDotBtn.style.userSelect = "none";
+  tripleDotBtn.style.cursor = "pointer";
 
-    GM_setValue('summaryVisible', isHidden);
-});
+  let holdTimer;
+  let held = false;
+
+  tripleDotBtn.addEventListener("mousedown", () => {
+    held = false;
+    holdTimer = setTimeout(() => {
+      held = true;
+      createFloatingToggleMenu(tripleDotBtn);
+    }, 500);
+  });
+
+  tripleDotBtn.addEventListener("mouseup", () => {
+    clearTimeout(holdTimer);
+    if (!held) toggleBothSections();
+  });
+
+  tripleDotBtn.addEventListener("mouseleave", () => {
+    clearTimeout(holdTimer);
+  });
+}
+
 
 
         let studies = [],
@@ -476,7 +600,7 @@ document.getElementById('summaryToggleIcon')?.addEventListener('click', () => {
 `);
                 updatePanelDecisionButtonsState();
                 setTimeout(updatePanelDecisionButtonsState, 300);
-                const counted = studies.filter(id => ["Yes", "No", "Maybe", "Skipped"].includes(decisions[id])).length;
+                const counted = studies.filter(id => ["Yes", "No", "Maybe"].includes(decisions[id])).length;
 const progress = Math.round((counted / studies.length) * 100);
 if (progressBar && studies.length > 0) {
     progressBar.style.width = progress + '%';
@@ -544,9 +668,11 @@ if (e.target.id === 'resetProgressBtn') {
 
 
 function updateSummary() {
+    document.getElementById("floatingToggleMenu")?.remove();
     const summaryList = document.getElementById("summaryList");
-    summaryList.innerHTML = "";
 
+const decisionSummaryContainer = document.getElementById("decisionSummaryContainer");
+if (decisionSummaryContainer) decisionSummaryContainer.innerHTML = "";
     const decisionsMap = {
         Maybe: { color: "orange", list: [] },
         Yes: { color: "green", list: [] },
@@ -601,11 +727,14 @@ function updateSummary() {
         container.appendChild(textSpan);
         container.appendChild(toggleBtn);
         wrapper.appendChild(container);
-        summaryList.appendChild(wrapper);
+if (decisionSummaryContainer) {
+  decisionSummaryContainer.appendChild(wrapper);
+}
     })
 // === AI Assistant Section inside #summaryList ===
 const aiWrapper = document.createElement("div");
-aiWrapper.style.marginTop = "20px";
+aiWrapper.id = "aiSectionContainer";
+aiWrapper.style.marginTop = "15px";
 
 
 
@@ -621,19 +750,19 @@ content.innerHTML = `
   justify-content: space-between;
   margin-bottom: 8px;
 ">
-  <button id="runAIButton" style="
-    font-size: 13px;
-    font-family: inherit;
-    color: #2c3e50;
-    background-color: #f0f0f0;
-    border: none;
-    padding: 2px 0;
-    border-radius: 4px;
-    cursor: pointer;
-    user-select: none;
-    text-align: center;
-    flex-grow: 1;
-  ">🤖 Ask AI for This Study</button>
+<button id="runAIButton" style="
+  font-size: 13px;
+  font-family: inherit;
+  color: #2c3e50;
+  background-color: #f5f5f5;
+  border: 1px solid #ccc;
+  padding: 2px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  user-select: none;
+  text-align: center;
+  flex-grow: 1;
+">🤖 Ask AI for This Study</button>
 
 <div id="togglePromptInputs" title="Toggle prompt settings" style="
   font-size: 16px;
@@ -663,7 +792,31 @@ content.innerHTML = `
 
 
 
-      <button id="loadAPIKeyBtn" style="width:100%; font-size:13px;">📂 Load API Key from File</button>
+<div style="display: flex; gap: 6px; align-items: center;">
+  <button id="loadAPIKeyBtn" style="
+    flex: 1;
+    font-size: 13px;
+    padding: 4px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background: #f5f5f5;
+    cursor: pointer;
+    line-height: 1;
+  ">📂 Load API Key from File</button>
+  <button id="clearAPIKeyBtn" title="Clear stored key" style="
+    font-size: 15px;
+    padding: 4px;
+    background: none;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    line-height: 1;
+  ">🗑️</button>
+</div>
+
+
+
+
       <input id="apiKeyFileInput" type="file" accept=".txt" style="display:none;" />
       <div id="apiKeyStatus" style="margin: 6px 0; font-size: 13px; color: green;"></div>
     </div>
@@ -712,7 +865,17 @@ togglePromptBtn.onclick = () => {
 
 
 aiWrapper.appendChild(content);
+const existingAI = [...summaryList.querySelectorAll("div")].find(div =>
+  div.querySelector("#runAIButton")
+);
+if (existingAI) existingAI.remove();
 summaryList.appendChild(aiWrapper);
+// Restore visibility state
+const summaryVisible = GM_getValue("showSummary", true);
+const aiVisible = GM_getValue("showAI", true);
+document.getElementById("lifetimeProgressContainer").style.display = summaryVisible ? "" : "none";
+document.getElementById("decisionSummaryContainer").style.display = summaryVisible ? "" : "none";
+document.getElementById("aiSectionContainer").style.display = aiVisible ? "" : "none";
 
 // Restore previous inputs
 const savedCriteria = GM_getValue("inclusionCriteriaText", "");
@@ -732,20 +895,52 @@ if (openaiKeyFromFile) {
 content.querySelector("#loadAPIKeyBtn").onclick = () => content.querySelector("#apiKeyFileInput").click();
 content.querySelector("#apiKeyFileInput").addEventListener("change", (event) => {
   const file = event.target.files[0];
+  const statusEl = content.querySelector("#apiKeyStatus");
   if (!file) return;
+
   const reader = new FileReader();
-  reader.onload = (e) => {
-    openaiKeyFromFile = e.target.result.trim();
+reader.onload = (e) => {
+  const statusEl = content.querySelector("#apiKeyStatus");
+  const raw = e.target.result || "";
+  const trimmed = raw.trim().split(/\r?\n/)[0].trim(); // Take only the first line
+
+  // Store the trimmed key
+  openaiKeyFromFile = trimmed;
+
+  // Validation: starts with sk- and at least 20 characters after sk-
+  const isValid = /^sk-[A-Za-z0-9-_]{20,}/.test(trimmed);
+
+  if (isValid) {
     GM_setValue("openaiKeyFromFile", openaiKeyFromFile);
-    content.querySelector("#apiKeyStatus").textContent = "✅ API key loaded from file.";
-      checkAndToggleLEDEffect();
-  };
+    statusEl.style.color = "green";
+    statusEl.textContent = "✅ API key loaded from file.";
+  } else {
+    openaiKeyFromFile = "";
+    GM_setValue("openaiKeyFromFile", "");
+    statusEl.style.color = "red";
+    statusEl.textContent = "❌ Invalid API key format. Please upload a valid key.";
+  }
+
+  checkAndToggleLEDEffect();
+};
+
 
   reader.onerror = () => {
-    content.querySelector("#apiKeyStatus").textContent = "❌ Failed to read API key file.";
+    statusEl.style.color = "red";
+    statusEl.textContent = "❌ Failed to read API key file.";
   };
+
   reader.readAsText(file);
 });
+// ✅ Clear API Key logic
+content.querySelector("#clearAPIKeyBtn").addEventListener("click", () => {
+  GM_setValue("openaiKeyFromFile", "");
+  openaiKeyFromFile = "";
+  content.querySelector("#apiKeyStatus").textContent = "❌ API key cleared.";
+  content.querySelector("#apiKeyStatus").style.color = "red";
+  checkAndToggleLEDEffect();
+});
+
 
 // Save inclusion criteria
 content.querySelector("#inclusionCriteriaInput").addEventListener("input", (e) => {
@@ -773,7 +968,8 @@ const output = content.querySelector("#aiDecisionOutput");
 
   output.textContent = "⏳ Asking ChatGPT...";
 const systemPrompt = GM_getValue("customSystemPrompt", "You are an assistant screening research abstracts for inclusion based on user-defined criteria. Keep explanations short and simple.");
-
+const customInstruction = systemPrompt.trim(); // reuse same input
+const hasCustomInstruction = !!customInstruction;
   try {
       const { author, year } = extractAuthorAndYear();
     const res = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -789,12 +985,14 @@ messages: [
   {
     role: "user",
 content:
-
   `First Author: ${author}\n` +
   `Publication Year: ${year}\n` +
   `Abstract Text: ${abstract}\n\n` +
   `Inclusion Criteria: ${criteria}\n\n` +
-  `Should this study be included in the review? Reply in this format: ${author} (${year}): your decision (Yes, No, or Maybe), followed by a short explanation under 3 sentences.`
+  (hasCustomInstruction
+    ? customInstruction
+    : `Should this study be included in the review? Reply in this format: ${author} (${year}): your decision (Yes, No, or Maybe), followed by a short explanation under 3 sentences.`)
+
 
   }
 ],
@@ -905,12 +1103,13 @@ checkAndToggleLEDEffect();
             } else {
                 window.__fromPanel = false;
 
-                const allFinished = studies.every(id =>
-                    ["Yes", "No", "Maybe", "Skipped"].includes(decisions[id])
-                );
+const allFinished = studies.every(id =>
+    ["Yes", "No", "Maybe"].includes(decisions[id])
+);
 
 // ✅ Ensure progress bar updates to 100% before alert
-const counted = studies.filter(id => ["Yes", "No", "Maybe", "Skipped"].includes(decisions[id])).length;
+const counted = studies.filter(id => ["Yes", "No", "Maybe"].includes(decisions[id])).length;
+
 const progress = Math.round((counted / studies.length) * 100);
 progressBar.style.width = progress + '%';
 progressInline.textContent = `${counted} of ${studies.length} studies done`;
@@ -1060,9 +1259,17 @@ exportBtn.onclick = function() {
         panelYesBtn.onclick = () => simulateDecision("Yes");
         panelNoBtn.onclick = () => simulateDecision("No");
         panelMaybeBtn.onclick = () => simulateDecision("Maybe");
-        skipBtn.onclick = () => {
-            if (!skipBtn.disabled) simulateDecision("Skipped");
-        };
+
+returnBtn.onclick = () => {
+    const savedList = GM_getValue('studyList', '');
+    const savedIndex = GM_getValue('studyIndex', 0);
+    const studies = savedList.split(',').map(s => s.trim()).filter(Boolean);
+    const currentStudy = studies[savedIndex];
+    if (currentStudy) {
+        const panel = document.getElementById("covidence-panel");
+        if (panel) panel.dataset.jumpTo = currentStudy;
+    }
+};
 
         const keywordInput = panel.querySelector('#keywordInput');
         const keywordHistoryDropdown = panel.querySelector('#keywordHistoryDropdown');
@@ -1268,9 +1475,9 @@ window.addEventListener('load', () => {
 
             }
 
-            const allFinished = studies.every(id =>
-                ["Yes", "No", "Maybe", "Skipped"].includes(decisions[id])
-            );
+const allFinished = studies.every(id =>
+    ["Yes", "No", "Maybe"].includes(decisions[id])
+);
 
             if (allFinished) {
                 // ✅ Update summary first
@@ -1280,7 +1487,7 @@ window.addEventListener('load', () => {
                     if (currentDisplay) currentDisplay.textContent = `#${currentID}`;
                     const summaryList = panel.querySelector('#summaryList');
                     const toggleSummaryBtn = panel.querySelector('#toggleSummaryBtn');
-        const skipBtn = panel.querySelector('#skipBtn');
+
                     const maybeList = studies.filter(id => decisions[id] === "Maybe");
                     const yesList = studies.filter(id => decisions[id] === "Yes");
                     const noList = studies.filter(id => decisions[id] === "No");
@@ -1345,7 +1552,7 @@ if (decisionSummaryContainer) {
                 // ⏱️ Delay popup so the UI visibly updates first
 
                 // ✅ Update progress bar before final popup
-                const counted = studies.filter(id => ["Yes", "No", "Maybe", "Skipped"].includes(decisions[id])).length;
+                const counted = studies.filter(id => ["Yes", "No", "Maybe"].includes(decisions[id])).length;
                 const progress = Math.round((counted / studies.length) * 100);
                 if (progressBar && studies.length > 0) {
                     progressBar.style.width = progress + '%';
@@ -1488,18 +1695,7 @@ if (existingAI) existingAI.remove();
                     }
                 }, 100); // allow DOM to update before blocking alert
             }
-            else {
-                // ✅ Go to next study
-                const currentID = studies[savedIndex];
-                if (!decisions[currentID]) {
-                    decisions[currentID] = "Skipped";
-                    GM_setValue("decisions", JSON.stringify(decisions));
-            const totalKey = "totalStudiesScreened";
-            const prev = parseInt(GM_getValue(totalKey, "0"), 10);
-            GM_setValue(totalKey, (prev + 1).toString());
-            updateLifetimeProgressUI();
 
-                }
 
                 const newIndex = savedIndex + 1;
                 if (newIndex < studies.length) {
@@ -1515,7 +1711,7 @@ if (existingAI) existingAI.remove();
                 }
             }
         }
-    });
+    );
 
 function extractAbstractText() {
   const abstractEl = Array.from(document.querySelectorAll("div, section, p")).find(el =>

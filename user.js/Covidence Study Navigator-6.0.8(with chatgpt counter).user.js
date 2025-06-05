@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Covidence Study Navigator
 // @namespace    http://tampermonkey.net/
-// @version      6.1.8
+// @version      0.1
 // @description  Draggable Covidence panel with saved position, decision logging, CSV export, color-coded decision display.
 // @match        *://*.covidence.org/*
 // @grant        GM_setValue
@@ -239,46 +239,25 @@ toast.innerHTML = `
               </div>
               <div style="margin-bottom: 20px; display: flex; flex-direction: column; gap: 8px; align-items: center;"></div>
               <!-- Keyword Search UI -->
-<div style='margin-top: -15px; margin-bottom: 10px;'>
-  <div style='display: flex; gap: 6px; align-items: center;'>
-    <div style='position: relative; flex: 1; max-width: 220px;'>
-      <input id='keywordInput' placeholder='Enter keywords' style='width: 100%; padding: 4px; font-size: 13px;'>
-      <div id='keywordHistoryDropdown' style='position:absolute; top:100%; left:0; right:0; background:white; border:1px solid #ccc; max-height:100px; overflow-y:auto; font-size:13px; z-index:9999; display:none;'></div>
-    </div>
-    <button id='addKeywordsBtn' title='Search keyword' style='background: none; border: none; cursor: pointer; font-size: 18px;'>🔍︎</button>
-    <span id='summaryToggleIcon' title='Toggle decision summary'>⋯</span>
-  </div>
-  <div id='keywordTags' style='margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px;'></div>
+              <div style='margin-top: -15px; margin-bottom: 14px;'>
+                <div style='display: flex; gap: 6px;'>
+                  <div style='position: relative; flex: 1;'>
+                    <input id='keywordInput' placeholder='Enter keywords' style='width: 100%; padding: 4px; font-size: 13px;'>
+                    <div id='keywordHistoryDropdown' style='position:absolute; top:100%; left:0; right:0; background:white; border:1px solid #ccc; max-height:100px; overflow-y:auto; font-size:13px; z-index:9999; display:none;'></div>
+                  </div>
+                  <button id='addKeywordsBtn' title='Search keyword' style='background: none; border: none; cursor: pointer; font-size: 18px;'>🔍︎</button>
+                </div>
+                <div id='keywordTags' style='margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px;'></div>
+              </div>
+<div id='toggleSummaryRow' style='margin: 0 auto 8px auto; padding: 4px 0; text-align: center; font-size: 13px; color: #007BFF; user-select: none;'>
+  <span id='toggleSummaryBtn'>Show decisions ▼</span>
 </div>
-
-
-
 <div id='summaryList' style='display:none; font-size: 12px; line-height: 1.4;'>
   <div id="lifetimeProgressContainer" style="height: 48px;"></div>
   <div id="decisionSummaryContainer" style="min-height: 36px;"></div>
 </div>`;
 
         document.body.appendChild(panel);
-        const toggleDotsStyle = document.createElement("style");
-toggleDotsStyle.textContent = `
-#summaryToggleIcon {
-  display: inline-block;
-  cursor: pointer;
-  font-size: 18px;
-  padding: 0px 4px;
-  border-radius: 4px;
-  line-height: 1;
-}
-#summaryToggleIcon:hover {
-  background-color: #ccc;
-}
-`;
-
-document.head.appendChild(toggleDotsStyle);
-
-
-
-
 const styleFixCursor = document.createElement('style');
 styleFixCursor.textContent = `
 #covidence-panel *:not(input):not(textarea):not(button) {
@@ -381,10 +360,10 @@ document.addEventListener("mouseup", function() {
 
 
 
-document.getElementById('summaryToggleIcon')?.addEventListener('click', () => {
+document.getElementById('toggleSummaryRow')?.addEventListener('click', () => {
     const isHidden = summaryList.style.display === 'none';
     summaryList.style.display = isHidden ? 'block' : 'none';
-
+    document.getElementById('toggleSummaryBtn').textContent = isHidden ? 'Hide decisions ▲' : 'Show decisions ▼';
     GM_setValue('summaryVisible', isHidden);
 });
 
@@ -408,7 +387,7 @@ document.getElementById('summaryToggleIcon')?.addEventListener('click', () => {
             document.getElementById("topRightIcons").style.display = "flex";
             const visible = GM_getValue('summaryVisible', false);
             summaryList.style.display = visible ? 'block' : 'none';
-
+            toggleSummaryBtn.textContent = visible ? 'Hide decisions ▲' : 'Show decisions ▼';
             updateStudy();
         }
 
@@ -457,6 +436,8 @@ document.getElementById('summaryToggleIcon')?.addEventListener('click', () => {
             if (index < studies.length) {
                 const studyID = "#" + studies[index];
                 currentDisplay.textContent = studyID;
+                const plainID = studies[index];
+  runAIAssistantForStudy(plainID); // 👈 Automatically fetch AI decision
                 const searchBox = document.querySelector("input[placeholder='Search studies']");
                 if (searchBox) {
                     searchBox.focus();
@@ -605,112 +586,61 @@ function updateSummary() {
     })
 // === AI Assistant Section inside #summaryList ===
 const aiWrapper = document.createElement("div");
-aiWrapper.style.marginTop = "20px";
+aiWrapper.style.marginTop = "14px";
 
-
+const toggleBtn = document.createElement("div");
+toggleBtn.textContent = GM_getValue("aiPanelOpen", false) ? "AI Assistant ▲" : "AI Assistant ▼";
+toggleBtn.style.cursor = "pointer";
+toggleBtn.style.color = "#007BFF";
+toggleBtn.style.fontSize = "13px";
+toggleBtn.style.marginBottom = "4px";
+toggleBtn.style.textAlign = "center";
+toggleBtn.style.display = "block";
 
 const content = document.createElement("div");
-content.style.display = "block";
+content.style.display = GM_getValue("aiPanelOpen", false) ? "block" : "none";
 content.innerHTML = `
-  <div style="padding-top: 0; position: relative;">
+  <div style="margin-bottom: 4px; text-align: center; font-size: 13px; color: #007BFF; cursor: pointer;" id="togglePromptInputs">AI Prompt Inputs +</div>
 
-    <!-- Fixed top bar -->
-<div id="aiHeaderBar" style="
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
-">
-  <button id="runAIButton" style="
-    font-size: 13px;
-    font-family: inherit;
-    color: #2c3e50;
-    background-color: #f0f0f0;
-    border: none;
-    padding: 2px 0;
-    border-radius: 4px;
-    cursor: pointer;
-    user-select: none;
-    text-align: center;
-    flex-grow: 1;
-  ">🤖 Ask AI for This Study</button>
+  <div id="aiInputsWrapper" style="display: none;">
+    <label style="display:block; margin-top:6px;">General Prompt for AI:</label>
+    <textarea id="systemPromptInput" rows="3" style="width:100%; font-size:13px; margin-bottom:6px;" placeholder="e.g., You are a senior researcher with 20 years of experience. Keep answers short. Yes = strong match, No = out of scope."></textarea>
 
-<div id="togglePromptInputs" title="Toggle prompt settings" style="
-  font-size: 16px;
-  color: #007BFF;
-  cursor: pointer !important;     /* ← Force hand cursor */
-  margin-left: 8px;
-  user-select: none;
-  display: flex;
-  align-items: center;
-  padding: 2px;
-">⚙️</div>
+    <label style="display:block; margin-top:6px;">Study Inclusion Criteria:</label>
+    <textarea id="inclusionCriteriaInput" rows="3" style="width:100%; font-size:13px; margin-bottom:6px;" placeholder="Define your inclusion criteria..."></textarea>
+  </div>
 
+  <button id="loadAPIKeyBtn" style="width:100%; font-size:13px;">📂 Load API Key from File</button>
+  <input id="apiKeyFileInput" type="file" accept=".txt" style="display:none;" />
+  <div id="apiKeyStatus" style="margin: 6px 0; font-size: 13px; color: green;"></div>
+  <button id="runAIButton" style="width:100%; font-size:13px;">Ask AI for This Study</button>
+  <div id="aiDecisionOutput" style="margin-top:6px; font-size:13px;"></div>
+<div id="aiRequestCounters" style="margin-top: 10px; font-size: 12px; color: #444;">
+  <div>🤖 Auto requests: <span id="autoCount">0</span></div>
+  <div>🧠 Manual requests: <span id="manualCount">0</span></div>
+  <button id="resetAICountsBtn" style="margin-top:6px; font-size:12px;">♻️ Reset AI Counters</button>
 </div>
 
-    <div id="aiDecisionOutput" style="margin-top:6px; font-size:13px;"></div>
-
-
-
-    <!-- Scrollable content -->
-    <div id="aiInputsWrapper" style="display: none;">
-
-     <label style="display:block; margin-top:6px;">Study Inclusion Criteria (required):</label>
-      <textarea id="inclusionCriteriaInput" rows="3" style="width:100%; font-size:13px; margin-bottom:6px;" placeholder="Define your inclusion criteria. AI will make a decision based on them."></textarea>
-
-     <label style="display:block; margin-top:6px;">General Prompt for AI (optional):</label>
-      <textarea id="systemPromptInput" rows="3" style="width:100%; font-size:13px; margin-bottom:6px;" placeholder="e.g., You are a senior researcher. Keep answers short."></textarea>
-
-
-
-      <button id="loadAPIKeyBtn" style="width:100%; font-size:13px;">📂 Load API Key from File</button>
-      <input id="apiKeyFileInput" type="file" accept=".txt" style="display:none;" />
-      <div id="apiKeyStatus" style="margin: 6px 0; font-size: 13px; color: green;"></div>
-    </div>
-
-
-  </div>
 `;
-
 // Toggle the AI Prompt inputs visibility
 const togglePromptBtn = content.querySelector("#togglePromptInputs");
 const promptInputs = content.querySelector("#aiInputsWrapper");
-    let ledEffectTriggered = GM_getValue("ledEffectTriggered", false);
-function checkAndToggleLEDEffect() {
-  const runBtn = content.querySelector("#runAIButton");
-  const inclusionInput = content.querySelector("#inclusionCriteriaInput");
-  const inclusionText = inclusionInput ? inclusionInput.value.trim() : "";
-  const hasAPIKey = !!GM_getValue("openaiKeyFromFile", "").trim();
-  const wasTriggered = GM_getValue("ledEffectTriggered", false);
-
-  if (runBtn) {
-    if (inclusionText && hasAPIKey) {
-      runBtn.classList.add("led-border");
-
-      if (!wasTriggered) {
-        runBtn.classList.add("led-flash");
-        GM_setValue("ledEffectTriggered", true);
-
-        setTimeout(() => runBtn.classList.remove("led-flash"), 1000);
-      }
-    } else {
-      runBtn.classList.remove("led-border");
-      runBtn.classList.remove("led-flash");
-      GM_setValue("ledEffectTriggered", false);
-    }
-  }
-}
-
-
 
 togglePromptBtn.onclick = () => {
   const isHidden = promptInputs.style.display === "none";
   promptInputs.style.display = isHidden ? "block" : "none";
-  togglePromptBtn.textContent = isHidden ? "⚙️" : "⚙️";
+  togglePromptBtn.textContent = isHidden ? "AI Prompt Inputs -" : "AI Prompt Inputs +";
 };
 
 
+toggleBtn.onclick = () => {
+  const isOpen = content.style.display === "block";
+  content.style.display = isOpen ? "none" : "block";
+  toggleBtn.textContent = isOpen ? "AI Assistant ▼" : "AI Assistant ▲";
+  GM_setValue("aiPanelOpen", !isOpen);
+};
 
+aiWrapper.appendChild(toggleBtn);
 aiWrapper.appendChild(content);
 summaryList.appendChild(aiWrapper);
 
@@ -723,11 +653,29 @@ if (savedPrompt) {
 if (savedCriteria) {
   content.querySelector("#inclusionCriteriaInput").value = savedCriteria;
 }
-    checkAndToggleLEDEffect();
 if (openaiKeyFromFile) {
   content.querySelector("#apiKeyStatus").textContent = "✅ API key loaded from file (saved)";
 }
 
+    // ✅ Handle reset button
+const resetBtn = content.querySelector("#resetAICountsBtn");
+if (resetBtn) {
+  resetBtn.onclick = () => {
+    GM_setValue("chatgpt_auto_requests", "0");
+    GM_setValue("chatgpt_manual_requests", "0");
+    if (autoEl) autoEl.textContent = "0";
+    if (manualEl) manualEl.textContent = "0";
+    alert("✅ AI request counters have been reset.");
+  };
+}
+
+// ✅ Update the request counters in the UI
+const auto = GM_getValue("chatgpt_auto_requests", "0");
+const manual = GM_getValue("chatgpt_manual_requests", "0");
+const autoEl = content.querySelector("#autoCount");
+const manualEl = content.querySelector("#manualCount");
+if (autoEl) autoEl.textContent = auto;
+if (manualEl) manualEl.textContent = manual;
 // Save new API key
 content.querySelector("#loadAPIKeyBtn").onclick = () => content.querySelector("#apiKeyFileInput").click();
 content.querySelector("#apiKeyFileInput").addEventListener("change", (event) => {
@@ -738,9 +686,7 @@ content.querySelector("#apiKeyFileInput").addEventListener("change", (event) => 
     openaiKeyFromFile = e.target.result.trim();
     GM_setValue("openaiKeyFromFile", openaiKeyFromFile);
     content.querySelector("#apiKeyStatus").textContent = "✅ API key loaded from file.";
-      checkAndToggleLEDEffect();
   };
-
   reader.onerror = () => {
     content.querySelector("#apiKeyStatus").textContent = "❌ Failed to read API key file.";
   };
@@ -750,18 +696,26 @@ content.querySelector("#apiKeyFileInput").addEventListener("change", (event) => 
 // Save inclusion criteria
 content.querySelector("#inclusionCriteriaInput").addEventListener("input", (e) => {
   GM_setValue("inclusionCriteriaText", e.target.value);
-  checkAndToggleLEDEffect();
 });
-
 // Save system prompt
 content.querySelector("#systemPromptInput").addEventListener("input", (e) => {
   GM_setValue("customSystemPrompt", e.target.value);
 });
 // Ask AI button
 content.querySelector("#runAIButton").onclick = async () => {
+    // ✅ Increment manual AI request counter
+const prevManual = parseInt(GM_getValue("chatgpt_manual_requests", "0"), 10);
+GM_setValue("chatgpt_manual_requests", (prevManual + 1).toString());
+console.log("✅ Manual counter incremented");
     const { author, year } = extractAuthorAndYear();
 const output = content.querySelector("#aiDecisionOutput");
 
+output.innerHTML = `
+  <div style="font-size: 12px; color: #555; margin-bottom: 4px;">
+    👤 <strong>Author:</strong> ${author || "<i>(not found)</i>"}<br>
+    📅 <strong>Year:</strong> ${year || "<i>(not found)</i>"}
+  </div>
+`;
 
   const criteria = content.querySelector("#inclusionCriteriaInput").value.trim();
 
@@ -818,16 +772,8 @@ output.innerHTML = `
   " title="Click to reveal" onclick="this.style.filter='none'; this.style.cursor='default'; this.title='';">
     <strong>${reply}</strong>
   </span>
-  <div id="aiHintText" style="
-    font-size: 11px;
-    color: #777;
-    margin-top: 4px;
-    text-align: right;
-    padding-right: 10px;
-    width: 100%;
-  ">(Click to reveal AI response)</div>
+  <div style="font-size: 11px; color: #777; margin-top: 4px;">(Click to reveal AI response)</div>
 `;
-
 
     if (currentID) {
       const aiDecisions = JSON.parse(GM_getValue("chatgpt_decisions", "{}"));
@@ -843,8 +789,56 @@ GM_setValue("chatgpt_explanations", JSON.stringify(aiExplanations));
     output.textContent = "❌ Error calling ChatGPT.";
   }
 };
-checkAndToggleLEDEffect();
-    ;
+;
+}
+async function runAIAssistantForStudy(studyID) {
+    // ✅ Increment automatic AI request counter
+const prevAuto = parseInt(GM_getValue("chatgpt_auto_requests", "0"), 10);
+GM_setValue("chatgpt_auto_requests", (prevAuto + 1).toString());
+console.log("✅ Auto counter incremented");
+  const criteria = GM_getValue("inclusionCriteriaText", "").trim();
+  const systemPrompt = GM_getValue("customSystemPrompt", "You are an assistant screening research abstracts for inclusion based on user-defined criteria. Keep explanations short and simple.");
+  if (!openaiKeyFromFile || !criteria) return;
+
+  const abstract = extractAbstractText();
+  if (!abstract) return;
+
+  const { author, year } = extractAuthorAndYear();
+
+  try {
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${openaiKeyFromFile}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-4",
+        messages: [
+          { role: "system", content: systemPrompt },
+          {
+            role: "user",
+            content: `First Author: ${author}\nPublication Year: ${year}\nAbstract Text: ${abstract}\n\nInclusion Criteria: ${criteria}\n\nShould this study be included in the review? Reply in this format: ${author} (${year}): your decision (Yes, No, or Maybe), followed by a short explanation under 3 sentences.`
+          }
+        ],
+        temperature: 0.2,
+      }),
+    });
+
+    const data = await res.json();
+    const reply = data.choices?.[0]?.message?.content?.trim() || "No response.";
+    const decisionOnly = (reply.match(/\b(Yes|No|Maybe)\b/i) || [])[1] || "Maybe";
+
+    const aiDecisions = JSON.parse(GM_getValue("chatgpt_decisions", "{}"));
+    const aiExplanations = JSON.parse(GM_getValue("chatgpt_explanations", "{}"));
+    aiDecisions[studyID] = decisionOnly;
+    aiExplanations[studyID] = reply;
+
+    GM_setValue("chatgpt_decisions", JSON.stringify(aiDecisions));
+    GM_setValue("chatgpt_explanations", JSON.stringify(aiExplanations));
+  } catch (err) {
+    console.error("Auto-AI failed:", err);
+  }
 }
 
 
@@ -1201,25 +1195,6 @@ exportBtn.onclick = function() {
         }
 
     }
-const ledStyle = document.createElement("style");
-ledStyle.textContent = `
-@keyframes ledFlashLimited {
-  0%, 100% { box-shadow: 0 0 0px 0px rgba(33, 150, 243, 0.8); }
-  50% { box-shadow: 0 0 12px 6px rgba(33, 150, 243, 0.5); }
-}
-
-#runAIButton.led-flash {
-  animation: ledFlashLimited 1s ease-in-out 1;
-}
-
-#runAIButton.led-border {
-  border: 1px solid rgba(33, 150, 243, 0.9) !important;
-}
-`;
-
-document.head.appendChild(ledStyle);
-
-
 
 window.addEventListener('load', () => {
     setTimeout(createPanel, 5);

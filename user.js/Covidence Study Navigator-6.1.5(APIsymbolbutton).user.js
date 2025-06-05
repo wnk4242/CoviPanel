@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Covidence Study Navigator
 // @namespace    http://tampermonkey.net/
-// @version      6.1.8
+// @version      6.1.5 (API symbol button)
 // @description  Draggable Covidence panel with saved position, decision logging, CSV export, color-coded decision display.
 // @match        *://*.covidence.org/*
 // @grant        GM_setValue
@@ -618,8 +618,9 @@ content.innerHTML = `
 <div id="aiHeaderBar" style="
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   margin-bottom: 8px;
+  gap: 1px;
 ">
   <button id="runAIButton" style="
     font-size: 13px;
@@ -635,18 +636,25 @@ content.innerHTML = `
     flex-grow: 1;
   ">🤖 Ask AI for This Study</button>
 
-<div id="togglePromptInputs" title="Toggle prompt settings" style="
-  font-size: 16px;
-  color: #007BFF;
-  cursor: pointer !important;     /* ← Force hand cursor */
-  margin-left: 8px;
-  user-select: none;
-  display: flex;
-  align-items: center;
-  padding: 2px;
-">⚙️</div>
+  <button id="loadAPIKeyBtn" title="Load API key from file" style="
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 2px;
+  ">🌐</button>
 
+  <div id="togglePromptInputs" title="Toggle prompt settings" style="
+    font-size: 17px;
+    color: black;
+    cursor: pointer !important;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    padding: 2px;
+  ">🛠️</div>
 </div>
+
 
     <div id="aiDecisionOutput" style="margin-top:6px; font-size:13px;"></div>
 
@@ -654,18 +662,21 @@ content.innerHTML = `
 
     <!-- Scrollable content -->
     <div id="aiInputsWrapper" style="display: none;">
+      <label style="display:block; margin-top:6px;">General Prompt for AI:</label>
+      <textarea id="systemPromptInput" rows="3" style="width:100%; font-size:13px; margin-bottom:6px;" placeholder="e.g., You are a senior researcher with 20 years of experience. Keep answers short. Yes = strong match, No = out of scope."></textarea>
 
-     <label style="display:block; margin-top:6px;">Study Inclusion Criteria (required):</label>
-      <textarea id="inclusionCriteriaInput" rows="3" style="width:100%; font-size:13px; margin-bottom:6px;" placeholder="Define your inclusion criteria. AI will make a decision based on them."></textarea>
-
-     <label style="display:block; margin-top:6px;">General Prompt for AI (optional):</label>
-      <textarea id="systemPromptInput" rows="3" style="width:100%; font-size:13px; margin-bottom:6px;" placeholder="e.g., You are a senior researcher. Keep answers short."></textarea>
-
+      <label style="display:block; margin-top:6px;">Study Inclusion Criteria:</label>
+      <textarea id="inclusionCriteriaInput" rows="3" style="width:100%; font-size:13px; margin-bottom:6px;" placeholder="Define your inclusion criteria..."></textarea>
 
 
-      <button id="loadAPIKeyBtn" style="width:100%; font-size:13px;">📂 Load API Key from File</button>
       <input id="apiKeyFileInput" type="file" accept=".txt" style="display:none;" />
-      <div id="apiKeyStatus" style="margin: 6px 0; font-size: 13px; color: green;"></div>
+      <div id="apiKeyStatus" style="
+  margin: 6px 0;
+  font-size: 13px;
+  color: green;
+  text-align: center;
+  width: 100%;
+"></div>
     </div>
 
 
@@ -675,33 +686,6 @@ content.innerHTML = `
 // Toggle the AI Prompt inputs visibility
 const togglePromptBtn = content.querySelector("#togglePromptInputs");
 const promptInputs = content.querySelector("#aiInputsWrapper");
-    let ledEffectTriggered = GM_getValue("ledEffectTriggered", false);
-function checkAndToggleLEDEffect() {
-  const runBtn = content.querySelector("#runAIButton");
-  const inclusionInput = content.querySelector("#inclusionCriteriaInput");
-  const inclusionText = inclusionInput ? inclusionInput.value.trim() : "";
-  const hasAPIKey = !!GM_getValue("openaiKeyFromFile", "").trim();
-  const wasTriggered = GM_getValue("ledEffectTriggered", false);
-
-  if (runBtn) {
-    if (inclusionText && hasAPIKey) {
-      runBtn.classList.add("led-border");
-
-      if (!wasTriggered) {
-        runBtn.classList.add("led-flash");
-        GM_setValue("ledEffectTriggered", true);
-
-        setTimeout(() => runBtn.classList.remove("led-flash"), 1000);
-      }
-    } else {
-      runBtn.classList.remove("led-border");
-      runBtn.classList.remove("led-flash");
-      GM_setValue("ledEffectTriggered", false);
-    }
-  }
-}
-
-
 
 togglePromptBtn.onclick = () => {
   const isHidden = promptInputs.style.display === "none";
@@ -723,9 +707,8 @@ if (savedPrompt) {
 if (savedCriteria) {
   content.querySelector("#inclusionCriteriaInput").value = savedCriteria;
 }
-    checkAndToggleLEDEffect();
 if (openaiKeyFromFile) {
-  content.querySelector("#apiKeyStatus").textContent = "✅ API key loaded from file (saved)";
+  content.querySelector("#apiKeyStatus").textContent = "✅ API key loaded from file";
 }
 
 // Save new API key
@@ -737,12 +720,10 @@ content.querySelector("#apiKeyFileInput").addEventListener("change", (event) => 
   reader.onload = (e) => {
     openaiKeyFromFile = e.target.result.trim();
     GM_setValue("openaiKeyFromFile", openaiKeyFromFile);
-    content.querySelector("#apiKeyStatus").textContent = "✅ API key loaded from file.";
-      checkAndToggleLEDEffect();
+    content.querySelector("#apiKeyStatus").textContent = "✅ API key loaded from file";
   };
-
   reader.onerror = () => {
-    content.querySelector("#apiKeyStatus").textContent = "❌ Failed to read API key file.";
+    content.querySelector("#apiKeyStatus").textContent = "❌ Failed to read API key file";
   };
   reader.readAsText(file);
 });
@@ -750,9 +731,7 @@ content.querySelector("#apiKeyFileInput").addEventListener("change", (event) => 
 // Save inclusion criteria
 content.querySelector("#inclusionCriteriaInput").addEventListener("input", (e) => {
   GM_setValue("inclusionCriteriaText", e.target.value);
-  checkAndToggleLEDEffect();
 });
-
 // Save system prompt
 content.querySelector("#systemPromptInput").addEventListener("input", (e) => {
   GM_setValue("customSystemPrompt", e.target.value);
@@ -843,8 +822,7 @@ GM_setValue("chatgpt_explanations", JSON.stringify(aiExplanations));
     output.textContent = "❌ Error calling ChatGPT.";
   }
 };
-checkAndToggleLEDEffect();
-    ;
+;
 }
 
 
@@ -1201,25 +1179,6 @@ exportBtn.onclick = function() {
         }
 
     }
-const ledStyle = document.createElement("style");
-ledStyle.textContent = `
-@keyframes ledFlashLimited {
-  0%, 100% { box-shadow: 0 0 0px 0px rgba(33, 150, 243, 0.8); }
-  50% { box-shadow: 0 0 12px 6px rgba(33, 150, 243, 0.5); }
-}
-
-#runAIButton.led-flash {
-  animation: ledFlashLimited 1s ease-in-out 1;
-}
-
-#runAIButton.led-border {
-  border: 1px solid rgba(33, 150, 243, 0.9) !important;
-}
-`;
-
-document.head.appendChild(ledStyle);
-
-
 
 window.addEventListener('load', () => {
     setTimeout(createPanel, 5);

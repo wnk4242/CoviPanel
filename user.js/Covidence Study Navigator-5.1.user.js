@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Covidence Study Navigator
 // @namespace    http://tampermonkey.net/
-// @version      5.9.5
+// @version      5.1
 // @description  Draggable Covidence panel with saved position, decision logging, CSV export, color-coded decision display.
 // @match        *://*.covidence.org/*
 // @grant        GM_setValue
@@ -10,43 +10,24 @@
 
 (function() {
     let lastVotedStudy = null;
-    let lastDecisionTime = null;
-let totalDecisionTimeMs = 0;
-let totalDecisionsMade = 0;
-
     'use strict';
     if (window.top !== window.self) return;
 
 
-const LEVELS = [
-  { threshold: 0, title: "Research Assistant I 🤦‍♂️" },
-  { threshold: 2, title: "Research Assistant II 🤷‍♂️" },
-  { threshold: 4, title: "PhD Student 1 Yr. 👦" },
-  { threshold: 6, title: "PhD Student 4 Yr. 🧔" },
-  { threshold: 8, title: "PhD Candidate 👴" },
-  { threshold: 10, title: "Dr. 👨‍🎓" },
-  { threshold: 12, title: "Postdoc 1 Yr. 🙂" },
-  { threshold: 14, title: "Postdoc 9 Yr. 😭" },
-  { threshold: 16, title: "Assistant Prof. 👨‍🏫" },
-  { threshold: 18, title: "Associate Prof. 🦹‍♂️" },
-  { threshold: 20, title: "Professor 🧙‍♂️" },
-  { threshold: 22, title: "Emeritus Prof. 🥂" }
+    const LEVELS = [
+    { threshold: 5, title: "Research Assistant I", emoji: "⭐" },
+    { threshold: 10, title: "Research Assistant II", emoji: "⭐" },
+    { threshold: 15, title: "PhD Student 1 Yr.", emoji: "⭐" },
+    { threshold: 20, title: "PhD Student 4 Yr.", emoji: "⭐" },
+    { threshold: 25, title: "PhD Candidate", emoji: "⭐" },
+    { threshold: 30, title: "PhD", emoji: "⭐" },
+    { threshold: 35, title: "Postdoc 1 Yr.", emoji: "⭐" },
+    { threshold: 40, title: "Postdoc 9 Yr.", emoji: "⭐" },
+    { threshold: 45, title: "Assistant Prof.", emoji: "⭐" },
+    { threshold: 50, title: "Associate Prof.", emoji: "⭐" },
+    { threshold: 55, title: "Professor", emoji: "⭐" },
+    { threshold: 60, title: "Professor", emoji: "⭐" }
 ];
-
-const LEVEL_DETAILS = {
-  "Research Assistant I 🤦‍♂️": { desc: "Doesn't understand research at all.", emoji: "🤦‍♂️" },
-  "Research Assistant II 🤷‍♂️": { desc: "Still confused but trying.", emoji: "🤷‍♂️" },
-  "PhD Student 1 Yr. 👦": { desc: "Newbie in grad school.", emoji: "👦" },
-  "PhD Student 4 Yr. 🧔": { desc: "Has a beard of experience.", emoji: "🧔" },
-  "PhD Candidate 👴": { desc: "Old and wise (but still poor).", emoji: "👴" },
-  "Dr. 👨‍🎓": { desc: "Finally got the title, still no job.", emoji: "👨‍🎓" },
-  "Postdoc 1 Yr. 🙂": { desc: "Optimistic researcher.", emoji: "🙂" },
-  "Postdoc 9 Yr. 😭": { desc: "Send help.", emoji: "😭" },
-  "Assistant Prof. 👨‍🏫": { desc: "Grading forever.", emoji: "👨‍🏫" },
-  "Associate Prof. 🦹‍♂️": { desc: "Master of committees.", emoji: "🦹‍♂️" },
-  "Professor 🧙‍♂️": { desc: "Wizard of academia.", emoji: "🧙‍♂️" },
-  "Emeritus Prof. 🥂": { desc: "Retired. Toasting to freedom.", emoji: "🥂" }
-};
 
 function updateLifetimeProgressUI() {
     const count = parseInt(GM_getValue("totalStudiesScreened", "0"), 10);
@@ -54,15 +35,19 @@ function updateLifetimeProgressUI() {
     let currentTitle = LEVELS[0].title;
     let nextThreshold = LEVELS[0].threshold;
 
-for (let i = LEVELS.length - 1; i >= 0; i--) {
-    if (count >= LEVELS[i].threshold) {
-        currentLevel = i + 1;
-        currentTitle = LEVELS[i].title;
-        nextThreshold = LEVELS[i + 1] ? LEVELS[i + 1].threshold : LEVELS[i].threshold;
-        break;
+    for (let i = 0; i < LEVELS.length; i++) {
+        if (count < LEVELS[i].threshold) {
+            currentLevel = i + 1;
+            currentTitle = LEVELS[i].title;
+            nextThreshold = LEVELS[i].threshold;
+            break;
+        }
+        if (i === LEVELS.length - 1) {
+            currentLevel = LEVELS.length;
+            currentTitle = LEVELS[i].title;
+            nextThreshold = LEVELS[i].threshold;
+        }
     }
-}
-
 
     const progress = Math.min(100, Math.round((count / nextThreshold) * 100));
     const bar = document.getElementById("lifetimeProgressBar");
@@ -74,12 +59,12 @@ for (let i = LEVELS.length - 1; i >= 0; i--) {
     if (bar) bar.style.width = progress + "%";
     if (text) text.textContent = `${count} / ${nextThreshold} studies`;
     if (levelTitle) levelTitle.textContent = currentTitle;
-    if (levelLeft) levelLeft.textContent = `Lv. ${currentLevel}`;
-    if (levelRight) levelRight.textContent = `Lv. ${currentLevel + 1}`;
+    if (levelLeft) levelLeft.textContent = `⭐ Lv. ${currentLevel}`;
+    if (levelRight) levelRight.textContent = `Lv. ${currentLevel + 1} ⭐`;
 }
 
 
-function createLevelProgressUI(parent) {
+    function createLevelProgressUI(parent) {
     const container = document.getElementById("lifetimeProgressContainer") || document.createElement("div");
     container.id = "lifetimeProgressContainer";
     container.style.margin = "14px 0 8px 0";
@@ -88,112 +73,43 @@ function createLevelProgressUI(parent) {
     let currentLevel = 0;
     let currentTitle = LEVELS[0].title;
     let nextThreshold = LEVELS[0].threshold;
-let previousLevel = parseInt(GM_getValue("lastLevel", "0"), 10);
 
-    for (let i = LEVELS.length - 1; i >= 0; i--) {
-    if (count >= LEVELS[i].threshold) {
-        currentLevel = i + 1;
-        currentTitle = LEVELS[i].title;
-        nextThreshold = LEVELS[i + 1] ? LEVELS[i + 1].threshold : LEVELS[i].threshold;
-        break;
+    for (let i = 0; i < LEVELS.length; i++) {
+        if (count < LEVELS[i].threshold) {
+            currentLevel = i + 1;
+            currentTitle = LEVELS[i].title;
+            nextThreshold = LEVELS[i].threshold;
+            break;
+        }
+        if (i === LEVELS.length - 1) {
+            currentLevel = LEVELS.length;
+            currentTitle = LEVELS[i].title;
+            nextThreshold = LEVELS[i].threshold;
+        }
     }
-}
-
-
-if (currentLevel > previousLevel) {
-    GM_setValue("showRankUpNextLoad", currentTitle);
-}
-GM_setValue("lastLevel", currentLevel);
-
 
     const progress = Math.min(100, Math.round((count / nextThreshold) * 100));
-    container.innerHTML = `
-        <!-- Rank + Reset Row -->
-        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 600; margin-bottom: 4px;">
-<div id="lifetimeRankTitleWrapper" style="flex: 1; text-align: center; position: relative;">
-  <span id="lifetimeRankTitle" style="cursor: help;">${currentTitle}</span>
-  <div id="rankTooltip" style="display:none; position:absolute; top:120%; left:50%; transform:translateX(-50%); background:#fff; border:1px solid #ccc; border-radius:6px; padding:6px 10px; box-shadow:0 4px 8px rgba(0,0,0,0.1); white-space:nowrap; z-index:9999; font-size:13px; text-align:center;"></div>
+container.innerHTML = `
+<div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: bold; margin-bottom: 6px;">
+    <span id="levelLeft">⭐ Lv. ${currentLevel}</span>
+    <span id="lifetimeRankTitle" style="font-size:13px; font-weight:600;">${currentTitle}</span>
+    <span id="levelRight">Lv. ${currentLevel + 1} ⭐</span>
 </div>
 
-
-            <button id="resetProgressBtn" title="Reset progress" style="background: none; border: none; cursor: pointer; font-size: 14px; color: #888;">🔄</button>
-        </div>
-
-        <!-- Levels + XP Row -->
-        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: bold; margin-bottom: 6px;">
-            <span id="levelLeft">Lv. ${currentLevel}</span>
-            <span id="lifetimeProgressText">${count} / ${nextThreshold} studies</span>
-            <span id="levelRight">Lv. ${currentLevel + 1}</span>
-        </div>
-
-        <!-- Progress Bar -->
-        <div style="height: 8px; background: #ddd; border-radius: 4px; margin-bottom: 6px;">
-            <div id="lifetimeProgressBar" style="height: 100%; width: ${progress}%; background: #2196F3; border-radius: 4px;"></div>
-        </div>
-    `;
-const titleEl = container.querySelector("#lifetimeRankTitle");
-const tooltipEl = container.querySelector("#rankTooltip");
-
-if (titleEl && tooltipEl) {
-    const detail = LEVEL_DETAILS[currentTitle];
-    if (detail) {
-        tooltipEl.innerHTML = `<div style="font-size: 24px;">${detail.emoji}</div><div style="margin-top: 4px;">${detail.desc}</div>`;
-
-        titleEl.addEventListener("mouseenter", () => {
-            tooltipEl.style.display = "block";
-        });
-        titleEl.addEventListener("mouseleave", () => {
-            tooltipEl.style.display = "none";
-        });
-    }
-}
-
+    <div style="height: 8px; background: #ddd; border-radius: 4px; margin-bottom: 4px;">
+        <div id="lifetimeProgressBar" style="height: 100%; width: ${progress}%; background: #2196F3; border-radius: 4px;"></div>
+    </div>
+    <div style="font-size: 12px; margin-bottom: 6px; text-align:center;">
+        <span id="lifetimeProgressText">${count} / ${nextThreshold} studies</span>
+        <button id="resetProgressBtn" title="Reset progress" style="margin-left: 8px; background: none; border: none; cursor: pointer; font-size: 14px; color: #888;">🔄</button>
+    </div>
+`;
 
 
     if (!document.getElementById("lifetimeProgressContainer")) {
         parent.insertBefore(container, parent.firstChild);
     }
 }
-
-function showRankUpToast(rankTitle) {
-    const toast = document.createElement('div');
-    toast.className = 'rank-toast';
-toast.innerHTML = `
-    <strong style="display: block; font-size: 18px; text-align: center;">Rank Up! 🎉</strong>
-    <span style="display: block; font-size: 20px; text-align: center;">${rankTitle}</span>
-`;
-
-    toast.style.position = 'fixed';
-    toast.style.bottom = '20px';
-    toast.style.right = '20px';
-    toast.style.padding = '16px 20px';
-    toast.style.background = '#fff'; // White background
-    toast.style.color = '#333'; // Darker text
-    toast.style.fontSize = '16px';
-    toast.style.border = '2px solid #2196F3'; // Blue border
-    toast.style.borderRadius = '10px';
-    toast.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.15)';
-    toast.style.opacity = '0';
-    toast.style.transform = 'translateY(20px)';
-    toast.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
-    toast.style.zIndex = '99999';
-    toast.style.textAlign = 'center';
-
-    document.body.appendChild(toast);
-
-    requestAnimationFrame(() => {
-        toast.style.opacity = '1';
-        toast.style.transform = 'translateY(0)';
-    });
-
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateY(20px)';
-        setTimeout(() => toast.remove(), 400);
-    }, 3000);
-}
-
-
 
 
     function createPanel() {
@@ -214,11 +130,10 @@ toast.innerHTML = `
         panel.style.fontSize = "14px";
         panel.style.fontFamily = "sans-serif";
         panel.style.boxShadow = "2px 2px 10px rgba(0,0,0,0.2)";
-
+        panel.style.cursor = "move";
 
         panel.innerHTML = `
-            <div id="covidence-header" style="font-size: 15px; font-weight: bold; cursor: move;">Covidence Study Navigator</div>
-
+            <strong style="font-size: 15px;">Covidence Study Navigator</strong>
             <div id="topRightIcons" style="position: absolute; top: 11px; right: 10px; display: none; gap: 7px; flex-direction: row;">
               <button id="exportBtn" title="Export decisions to .csv" style="background:none; border:none; cursor:pointer; font-size:22px;" aria-label="Export decisions to .csv">🖫</button>
               <button id="resetBtn" title="Start a new screening session" style="background:none; border:none; cursor:pointer; font-size:21px;" aria-label="Start a new screening session">⟳</button>
@@ -250,40 +165,28 @@ toast.innerHTML = `
                 <div id='keywordTags' style='margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px;'></div>
               </div>
               <button id='toggleSummaryBtn' style='margin: 0 auto 8px auto; display: block; background: none; border: none; color: #007BFF; font-size: 13px; cursor: pointer;'>Show decisions ▼</button>
-              <div id='summaryList' style='display:none; font-size: 12px; line-height: 1.4;'>
+              <div id='summaryList' style='display:none; font-size: 12px; line-height: 1.4; max-height: 150px; overflow-y: auto;'></div>
             </div>`;
 
         document.body.appendChild(panel);
-const styleFixCursor = document.createElement('style');
-styleFixCursor.textContent = `
-#covidence-panel *:not(input):not(textarea):not(button) {
-  cursor: default !important;
-}
-`;
-document.head.appendChild(styleFixCursor);
-      let isDragging = false, offsetX, offsetY;
-panel.addEventListener("mousedown", function(e) {
-    // Prevent drag when clicking inside input, textarea, or button
-    if (["textarea", "input", "button"].includes(e.target.tagName.toLowerCase())) return;
-    isDragging = true;
-    offsetX = e.clientX - panel.offsetLeft;
-    offsetY = e.clientY - panel.offsetTop;
-});
 
-
-document.addEventListener("mousemove", function(e) {
-    if (isDragging) {
-        panel.style.left = (e.clientX - offsetX) + "px";
-        panel.style.top = (e.clientY - offsetY) + "px";
-        GM_setValue("panelLeft", panel.style.left);
-        GM_setValue("panelTop", panel.style.top);
-    }
-});
-
-document.addEventListener("mouseup", function() {
-    isDragging = false;
-});
-
+        let isDragging = false,
+            offsetX, offsetY;
+        panel.addEventListener("mousedown", function(e) {
+            if (["textarea", "input", "button"].includes(e.target.tagName.toLowerCase())) return;
+            isDragging = true;
+            offsetX = e.clientX - panel.offsetLeft;
+            offsetY = e.clientY - panel.offsetTop;
+        });
+        document.addEventListener("mousemove", function(e) {
+            if (isDragging) {
+                panel.style.left = (e.clientX - offsetX) + "px";
+                panel.style.top = (e.clientY - offsetY) + "px";
+                GM_setValue('panelLeft', panel.style.left);
+                GM_setValue('panelTop', panel.style.top);
+            }
+        });
+        document.addEventListener("mouseup", () => { isDragging = false; });
 
         const listInput = panel.querySelector('#studyListInput');
         let detectIDsBtn;
@@ -387,11 +290,6 @@ document.addEventListener("mouseup", function() {
         }
 
         startBtn.onclick = function() {
-            GM_setValue("sessionStartTime", Date.now());
-
-
-
-
             const rawInput = listInput.value.trim();
             if (!rawInput) return alert("Please enter at least one study number.");
             const cleanInput = rawInput.replace(/\n|\r/g, ',');
@@ -422,7 +320,6 @@ document.addEventListener("mouseup", function() {
             controls.style.display = 'block';
             // moved to summaryList
             document.getElementById("topRightIcons").style.display = "flex";
-            lastDecisionTime = Date.now();
             updateStudy();
             setTimeout(simulateEnter, 300);
         };
@@ -441,7 +338,6 @@ document.addEventListener("mouseup", function() {
                     searchBox.blur();
                 }
                 GM_setValue('studyIndex', index);
-                lastDecisionTime = Date.now();
                 attachDecisionListeners();
                 updateSummary();
             createLevelProgressUI(summaryList);
@@ -492,93 +388,32 @@ if (progressInline) progressInline.textContent = `(${counted} of ${studies.lengt
 
 
         summaryList.addEventListener('click', function(e) {
-if (e.target.id === 'resetProgressBtn') {
-    if (confirm('Reset your lifetime progress?')) {
-        GM_setValue("totalStudiesScreened", "0");
-        GM_setValue("lastLevel", "0");
-        GM_setValue("totalTimeMs", "0");
-        updateLifetimeProgressUI();
-
-        // 🔄 Refresh tooltip contents
-        const levelTitle = document.getElementById("lifetimeRankTitle");
-        const tooltip = document.getElementById("rankTooltip");
-        if (levelTitle && tooltip) {
-            const newTitle = LEVELS[0].title;
-            const detail = LEVEL_DETAILS[newTitle];
-            levelTitle.textContent = newTitle;
-            if (detail) {
-                tooltip.innerHTML = `<div style="font-size: 24px;">${detail.emoji}</div><div style="margin-top: 4px;">${detail.desc}</div>`;
+            if (e.target.id === 'resetProgressBtn') {
+                if (confirm('Reset your lifetime progress?')) {
+                    GM_setValue("totalStudiesScreened", "0");
+                    updateLifetimeProgressUI();
+                }
             }
-        }
-    }
-}
-
-
         });
 
 
-function updateSummary() {
-    const summaryList = document.getElementById("summaryList");
-    summaryList.innerHTML = "";
+        function updateSummary() {
+            const maybeList = studies.filter(id => decisions[id] === "Maybe");
+            const yesList = studies.filter(id => decisions[id] === "Yes");
+            const noList = studies.filter(id => decisions[id] === "No");
 
-    const decisionsMap = {
-        Maybe: { color: "orange", list: [] },
-        Yes: { color: "green", list: [] },
-        No: { color: "red", list: [] },
-    };
+            function makeColoredList(ids, color) {
+                return ids.map(id => `<span style="color:${color};">${id}</span>`).join(', ');
+            }
 
-    for (const id of studies) {
-        const vote = decisions[id];
-        if (decisionsMap[vote]) {
-            decisionsMap[vote].list.push(id);
+            summaryList.innerHTML = `<div style="margin-bottom: 10px;"></div>` +
+
+                `<strong style="color:orange;">Maybe:</strong> ${makeColoredList(maybeList, 'orange')}<br>
+     <strong style="color:green;">Yes:</strong> ${makeColoredList(yesList, 'green')}<br>
+     <strong style="color:red;">No:</strong> ${makeColoredList(noList, 'red')}`;
+
+
         }
-    }
-
-    Object.entries(decisionsMap).forEach(([label, { color, list }]) => {
-        const wrapper = document.createElement("div");
-        wrapper.style.marginBottom = "2px";
-        wrapper.style.fontSize = "12px";
-        wrapper.style.lineHeight = "1.4";
-
-        const container = document.createElement("div");
-        container.style.display = "flex";
-        container.style.alignItems = "flex-start";
-        container.style.flexWrap = "nowrap";
-        container.style.overflow = "hidden";
-
-        const textSpan = document.createElement("div");
-        textSpan.style.flex = "1 1 auto";
-        textSpan.style.overflow = "hidden";
-        textSpan.style.whiteSpace = "nowrap";
-        textSpan.style.textOverflow = "ellipsis";
-        textSpan.innerHTML = `<strong style="color:${color}">${label}:</strong> ` +
-            `<span style="color:${color}">${list.join(", ")}</span>`;
-
-        const toggleBtn = document.createElement("div");
-        toggleBtn.textContent = "[+]";
-        toggleBtn.style.flex = "0 0 auto";
-        toggleBtn.style.color = "#007BFF";
-        toggleBtn.style.cursor = "pointer";
-        toggleBtn.style.fontSize = "11px";
-        toggleBtn.style.marginLeft = "6px";
-        toggleBtn.style.userSelect = "none";
-
-        let expanded = false;
-        toggleBtn.onclick = () => {
-            expanded = !expanded;
-            textSpan.style.whiteSpace = expanded ? "normal" : "nowrap";
-            textSpan.style.overflow = expanded ? "visible" : "hidden";
-            textSpan.style.textOverflow = expanded ? "unset" : "ellipsis";
-            toggleBtn.textContent = expanded ? "[–]" : "[+]";
-        };
-
-        container.appendChild(textSpan);
-        container.appendChild(toggleBtn);
-        wrapper.appendChild(container);
-        summaryList.appendChild(wrapper);
-    });
-}
-
 
         setInterval(() => {
             if (panel.dataset.jumpTo) {
@@ -599,13 +434,6 @@ function updateSummary() {
         function simulateDecision(value) {
             window.__fromPanel = true;
             const currentID = studies[index];
-
-            if (lastDecisionTime) {
-                const elapsed = Date.now() - lastDecisionTime;
-                totalDecisionTimeMs += elapsed;
-                totalDecisionsMade += 1;
-            }
-
             decisions[currentID] = value;
             GM_setValue("decisions", JSON.stringify(decisions));
             const totalKey = "totalStudiesScreened";
@@ -657,61 +485,7 @@ progressInline.textContent = `${counted} of ${studies.length} studies done`;
 
                     if (progressInline) progressInline.textContent = `(${counted} of ${studies.length} done)`;
                     setTimeout(() => {
-                       const startTime = GM_getValue("sessionStartTime", null);
-let sessionMsg = "";
-if (startTime) {
-    const elapsedMs = Date.now() - startTime;
-
-    // ✅ Update total time
-    const previousTotal = parseInt(GM_getValue("totalTimeMs", "0"), 10);
-    const newTotal = previousTotal + elapsedMs;
-    GM_setValue("totalTimeMs", newTotal);
-
-    // ⏱ Format session
-    const totalSeconds = Math.floor(elapsedMs / 1000);
-    const hours = Math.floor(totalSeconds / 3600);
-    const mins = Math.floor((totalSeconds % 3600) / 60);
-    const secs = totalSeconds % 60;
-    const sessionTimeStr = `${hours}h ${mins}m ${secs}s`;
-
-    // ⏱ Format total
-    const totalSec = Math.floor(newTotal / 1000);
-    const totalH = Math.floor(totalSec / 3600);
-    const totalM = Math.floor((totalSec % 3600) / 60);
-    const totalS = totalSec % 60;
-    const totalTimeStr = `${totalH}h ${totalM}m ${totalS}s`;
-sessionMsg = `\n\n🕒 Session time: ${sessionTimeStr}\n⏱ Total time: ${totalTimeStr}`;
-
-
-
-    GM_setValue("sessionStartTime", null);
-}
-
-                        const avgDecisionTimeSec = totalDecisionsMade > 0
-    ? (totalDecisionTimeMs / totalDecisionsMade / 1000).toFixed(1)
-    : "0.0";
-
-const maybeCount = Object.values(decisions).filter(v => v === "Maybe").length;
-const yesCount = Object.values(decisions).filter(v => v === "Yes").length;
-const noCount = Object.values(decisions).filter(v => v === "No").length;
-const totalCount = maybeCount + yesCount + noCount;
-
-const maybePct = totalCount ? ((maybeCount / totalCount) * 100).toFixed(1) : "0.0";
-const yesPct = totalCount ? ((yesCount / totalCount) * 100).toFixed(1) : "0.0";
-const noPct = totalCount ? ((noCount / totalCount) * 100).toFixed(1) : "0.0";
-
-alert(
-  "You've reached the end of your study list!" + sessionMsg +
-    `\n⏳ Avg decision time: ${avgDecisionTimeSec}s` +
-  "\n\n📊 Decision breakdown:\n" +
-  `• Maybe: ${maybeCount} (${maybePct}%)\n` +
-  `• Yes: ${yesCount} (${yesPct}%)\n` +
-  `• No: ${noCount} (${noPct}%)`
-
-);
-
-
-
+                        alert("You've reached the end of your study list!");
 
                         const csvHeader = "Study ID,Decision";
                         const csvRows = studies.filter(id => decisions[id]).map(id => `${id},${decisions[id]}`);
@@ -749,7 +523,6 @@ resetBtn.onclick = function() {
             GM_setValue('studyList', '');
             GM_setValue('studyIndex', 0);
             GM_setValue('decisions', '{}');
-    GM_setValue("sessionStartTime", null);
             location.reload();
         };
 
@@ -909,18 +682,9 @@ resetBtn.onclick = function() {
 
     }
 
-window.addEventListener('load', () => {
-    setTimeout(createPanel, 5);
-
-    // 👇 Check if a toast was queued
-    const pendingToast = GM_getValue("showRankUpNextLoad", null);
-    if (pendingToast) {
-        setTimeout(() => {
-            showRankUpToast(pendingToast);
-            GM_setValue("showRankUpNextLoad", null);
-        }, 800); // slight delay so panel loads first
-    }
-});
+    window.addEventListener('load', () => {
+        setTimeout(createPanel, 5);
+    });
 
     // ✅ Automatically click "Next" after built-in button — unless triggered from panel
     document.body.addEventListener("click", function(e) {
@@ -941,12 +705,6 @@ window.addEventListener('load', () => {
 
            currentID = studies[savedIndex];
             if (currentID) {
-                if (lastDecisionTime) {
-                    const elapsed = Date.now() - lastDecisionTime;
-                    totalDecisionTimeMs += elapsed;
-                    totalDecisionsMade += 1;
-                }
-
                 decisions[currentID] = voteBtn.value;
                 GM_setValue("decisions", JSON.stringify(decisions));
             const totalKey = "totalStudiesScreened";
@@ -1005,60 +763,7 @@ if (summaryList && !document.getElementById("lifetimeProgressContainer")) {
 }
 
                 setTimeout(() => {
-                    const startTime = GM_getValue("sessionStartTime", null);
-let sessionMsg = "";
-if (startTime) {
-    const elapsedMs = Date.now() - startTime;
-
-    // ✅ Update total time
-    const previousTotal = parseInt(GM_getValue("totalTimeMs", "0"), 10);
-    const newTotal = previousTotal + elapsedMs;
-    GM_setValue("totalTimeMs", newTotal);
-
-    // ⏱ Format session
-    const totalSeconds = Math.floor(elapsedMs / 1000);
-    const hours = Math.floor(totalSeconds / 3600);
-    const mins = Math.floor((totalSeconds % 3600) / 60);
-    const secs = totalSeconds % 60;
-    const sessionTimeStr = `${hours}h ${mins}m ${secs}s`;
-
-    // ⏱ Format total
-    const totalSec = Math.floor(newTotal / 1000);
-    const totalH = Math.floor(totalSec / 3600);
-    const totalM = Math.floor((totalSec % 3600) / 60);
-    const totalS = totalSec % 60;
-    const totalTimeStr = `${totalH}h ${totalM}m ${totalS}s`;
-    sessionMsg = `\n\n🕒 Session time: ${sessionTimeStr}\n⏱ Total time: ${totalTimeStr}`;
-
-
-    GM_setValue("sessionStartTime", null);
-}
-                    const avgDecisionTimeSec = totalDecisionsMade > 0
-    ? (totalDecisionTimeMs / totalDecisionsMade / 1000).toFixed(1)
-    : "0.0";
-
-
-const maybeCount = Object.values(decisions).filter(v => v === "Maybe").length;
-const yesCount = Object.values(decisions).filter(v => v === "Yes").length;
-const noCount = Object.values(decisions).filter(v => v === "No").length;
-const totalCount = maybeCount + yesCount + noCount;
-
-const maybePct = totalCount ? ((maybeCount / totalCount) * 100).toFixed(1) : "0.0";
-const yesPct = totalCount ? ((yesCount / totalCount) * 100).toFixed(1) : "0.0";
-const noPct = totalCount ? ((noCount / totalCount) * 100).toFixed(1) : "0.0";
-
-alert(
-  "You've reached the end of your study list!" + sessionMsg +
-     `\n⏳ Avg decision time: ${avgDecisionTimeSec}s` +
-  "\n\n📊 Decision breakdown:\n" +
-  `• Maybe: ${maybeCount} (${maybePct}%)\n` +
-  `• Yes: ${yesCount} (${yesPct}%)\n` +
-  `• No: ${noCount} (${noPct}%)`
-
-);
-
-
-
+                    alert("You've reached the end of your study list!");
 
                     // ✅ Export CSV
                     const csvHeader = "Study ID,Decision";
