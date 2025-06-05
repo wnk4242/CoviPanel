@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Covidence Study Navigator
 // @namespace    http://tampermonkey.net/
-// @version      4.6
+// @version      4.0.0 (front panel issues)
 // @description  Draggable Covidence panel with saved position, decision logging, CSV export, color-coded decision display.
 // @match        *://*.covidence.org/*
 // @grant        GM_setValue
@@ -33,18 +33,26 @@
         panel.style.cursor = "move";
 
         panel.innerHTML = `
-            <strong style="font-size: 15px;">Covidence Study Navigator</strong>
-            <div id="topRightIcons" style="position: absolute; top: 11px; right: 10px; display: none; gap: 7px; flex-direction: row;">
-              <button id="exportBtn" title="Export decisions to .csv" style="background:none; border:none; cursor:pointer; font-size:22px;" aria-label="Export decisions to .csv">🖫</button>
-              <button id="resetBtn" title="Start a new screening session" style="background:none; border:none; cursor:pointer; font-size:21px;" aria-label="Start a new screening session">⟳</button>
-            </div>
-            <textarea id='studyListInput' rows='6' style='width:100%; margin-top:10px; font-size: 13px;' placeholder='Enter study IDs to start screening. \nYou may enter study IDs in three ways: \n1) Pasting them directly from Excel \n2) Using "-" and "," (e.g., 3-6 or 3,4,5,6) \n3) Clicking the "Detect" button below \n'></textarea>
 
-            <button id='startBtn' style='margin-top:10px; width: 100%;'>▶ Begin Screening</button>
-            <div id='studyControls' style='display:none; margin-top:15px;'>
-              <div style="margin-bottom: 5px;">Current study: <span id='currentStudy'>?</span><span id='progressInline' style='margin-left: 8px; font-size: 14px; color: #555;'></span>
+            <div id="topRightIcons" style="margin-bottom: 10px; display: flex; flex-direction: row; align-items: center; gap: 6px;">
+        <input id='keywordInput' placeholder='Enter keywords' style='padding: 3px 6px; font-size: 13px; width: 199px; border: 1px solid #ccc; border-radius: 4px;'>
+        <button id='searchKeywordBtn' title='Search keyword' style='background: none; border: none; cursor: pointer; font-size: 20px;'>🔍︎</button>
+        <button id="exportBtn" title="Export decisions to .csv" style="background:none; border:none; cursor:pointer; font-size:22px;">🖫</button>
+        <button id="resetBtn" title="Start a new screening session" style="background:none; border:none; cursor:pointer; font-size:21px;">⟳</button>
+        <div id='keywordHistoryDropdown' style='position:absolute; top: 100%; left: 0; background:white; border:1px solid #ccc; max-height:100px; overflow-y:auto; font-size:13px; z-index:9999; display:none; width: 198px;'></div>
+    </div>
+
+
+<div id="studyInputRow" style="margin-bottom: 12px; display: flex; gap: 6px; align-items: center;">
+  <input id='studyListInput' type='text' placeholder='Enter study IDs' style='flex: 1; padding: 3px 6px; font-size: 13px; border: 1px solid #ccc; border-radius: 4px;'>
+  <button id='startBtn' style='padding: 4px 10px; font-size: 13px; cursor: pointer;'>Start</button>
+</div>
+<div id='studyControls' style='display:block; margin-top:35px;'>
+              <div style="margin-bottom: 5px;">Current study: <span id='currentStudy'>?</span>
   <button id='skipBtn' title='Skip this study' style='margin-left: 6px; background: none; border: none; font-size: 16px; cursor: not-allowed; opacity: 0.5;' disabled>⏭</button>
-              </div>              <div style="margin-bottom: 12px; height: 10px; background: #eee; border-radius: 4px;">
+              </div>
+              <div id="progressText" style="margin-bottom: 6px; font-size: 12px; color: #333;">0 of 0</div>
+              <div style="margin-bottom: 12px; height: 10px; background: #eee; border-radius: 4px;">
                 <div id="progressBar" style="height: 100%; background: #4caf50; width: 0%; border-radius: 4px;"></div>
               </div>
               <div style="margin-bottom: 30px; display: flex; flex-direction: column; gap: 12px; align-items: center;">
@@ -54,17 +62,12 @@
               </div>
               <div style="margin-bottom: 20px; display: flex; flex-direction: column; gap: 8px; align-items: center;"></div>
               <!-- Keyword Search UI -->
-              <div style='margin-top: -15px; margin-bottom: 14px;'>
-                <div style='display: flex; gap: 6px;'>
-                  <div style='position: relative; flex: 1;'>
-                    <input id='keywordInput' placeholder='Enter keywords' style='width: 100%; padding: 4px; font-size: 13px;'>
-                    <div id='keywordHistoryDropdown' style='position:absolute; top:100%; left:0; right:0; background:white; border:1px solid #ccc; max-height:100px; overflow-y:auto; font-size:13px; z-index:9999; display:none;'></div>
                   </div>
-                  <button id='addKeywordsBtn' title='Search keyword' style='background: none; border: none; cursor: pointer; font-size: 18px;'>🔍︎</button>
+
                 </div>
-                <div id='keywordTags' style='margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px;'></div>
+                <div id='keywordTags' style='margin-top: -25px; display: flex; flex-wrap: wrap; gap: 6px;'></div>
               </div>
-              <button id='toggleSummaryBtn' style='margin: 0 auto 8px auto; display: block; background: none; border: none; color: #007BFF; font-size: 13px; cursor: pointer;'>Show decisions ▼</button>
+              <button id='toggleSummaryBtn' style='margin: 0 auto 8px auto; margin-top: 10px; margin-bottom: 8px; display: block; background: none; border: none; color: #007BFF; font-size: 13px; cursor: pointer;'>Show decisions ▼</button>
               <div id='summaryList' style='display:none; font-size: 12px; line-height: 1.4; max-height: 150px; overflow-y: auto;'></div>
             </div>`;
 
@@ -89,26 +92,6 @@
         document.addEventListener("mouseup", () => { isDragging = false; });
 
         const listInput = panel.querySelector('#studyListInput');
-        let detectIDsBtn;
-
-        // ✅ Add detect visible study IDs button (only on front panel)
-        detectIDsBtn = document.createElement("button");
-        detectIDsBtn.textContent = "👀 Detect Unscreened Studies";
-        detectIDsBtn.style.marginTop = "6px";
-        detectIDsBtn.style.width = "100%";
-        listInput.insertAdjacentElement("afterend", detectIDsBtn);
-
-        detectIDsBtn.onclick = () => {
-            const matches = document.body.innerText.match(/#\d+/g) || [];
-            const uniqueIDs = [...new Set(matches.map(x => x.replace('#', '')))];
-            if (uniqueIDs.length) {
-                listInput.value = uniqueIDs.join(', ');
-                alert(`✅ Detected ${uniqueIDs.length} unique study IDs.`);
-            } else {
-                alert("No study IDs found on this page.");
-            }
-        };
-
         const startBtn = panel.querySelector('#startBtn');
         const controls = panel.querySelector('#studyControls');
         const currentDisplay = panel.querySelector('#currentStudy');
@@ -118,7 +101,7 @@
         const panelNoBtn = panel.querySelector('#panelNoBtn');
         const panelMaybeBtn = panel.querySelector('#panelMaybeBtn');
         const progressBar = panel.querySelector('#progressBar');
-        const progressInline = panel.querySelector('#progressInline');
+        const progressText = panel.querySelector('#progressText');
         const summaryList = panel.querySelector('#summaryList');
         const toggleSummaryBtn = panel.querySelector('#toggleSummaryBtn');
         const skipBtn = panel.querySelector('#skipBtn');
@@ -175,11 +158,11 @@
         decisions = JSON.parse(GM_getValue('decisions', '{}'));
 
         if (savedList) {
+            document.getElementById('studyListInput').disabled = true;
+            document.getElementById('startBtn').disabled = true;
             studies = savedList.split(',');
             index = savedIndex;
-            listInput.style.display = 'none';
-            startBtn.style.display = 'none';
-            if (detectIDsBtn) detectIDsBtn.style.display = 'none';
+            document.getElementById('studyControls').style.display = 'block';
             controls.style.display = 'block';
             document.getElementById("topRightIcons").style.display = "flex";
             const visible = GM_getValue('summaryVisible', false);
@@ -189,6 +172,8 @@
         }
 
         startBtn.onclick = function() {
+            studyListInput.disabled = true;
+            startBtn.disabled = true;
             const rawInput = listInput.value.trim();
             if (!rawInput) return alert("Please enter at least one study number.");
             const cleanInput = rawInput.replace(/\n|\r/g, ',');
@@ -213,9 +198,7 @@
             index = 0;
             GM_setValue('studyList', studies.join(','));
             GM_setValue('studyIndex', index);
-            listInput.style.display = 'none';
-            startBtn.style.display = 'none';
-            if (detectIDsBtn) detectIDsBtn.style.display = 'none';
+            document.getElementById('studyControls').style.display = 'block';
             controls.style.display = 'block';
             document.getElementById("topRightIcons").style.display = "flex";
             updateStudy();
@@ -240,13 +223,11 @@
                 updateSummary();
                 updatePanelDecisionButtonsState();
                 setTimeout(updatePanelDecisionButtonsState, 300);
-                const counted = studies.filter(id => ["Yes", "No", "Maybe", "Skipped"].includes(decisions[id])).length;
-const progress = Math.round((counted / studies.length) * 100);
-if (progressBar && studies.length > 0) {
-    progressBar.style.width = progress + '%';
-}
-if (progressInline) progressInline.textContent = `(${counted} of ${studies.length} done)`;
-
+                if (progressBar && studies.length > 0) {
+                    const progress = Math.round(((index + 1) / studies.length) * 100);
+                    progressBar.style.width = progress + '%';
+                }
+                if (progressText) progressText.textContent = `${index + 1} of ${studies.length}`;
             }
         }
 
@@ -332,17 +313,9 @@ if (progressInline) progressInline.textContent = `(${counted} of ${studies.lengt
                     ["Yes", "No", "Maybe", "Skipped"].includes(decisions[id])
                 );
 
-// ✅ Ensure progress bar updates to 100% before alert
-const counted = studies.filter(id => ["Yes", "No", "Maybe", "Skipped"].includes(decisions[id])).length;
-const progress = Math.round((counted / studies.length) * 100);
-progressBar.style.width = progress + '%';
-progressInline.textContent = `${counted} of ${studies.length} studies done`;
-
-
                 if (allFinished) {
                     updateSummary();
 
-                    if (progressInline) progressInline.textContent = `(${counted} of ${studies.length} done)`;
                     setTimeout(() => {
                         alert("You've reached the end of your study list!");
 
@@ -361,9 +334,7 @@ progressInline.textContent = `${counted} of ${studies.length} studies done`;
                         GM_setValue('studyIndex', 0);
                         GM_setValue('decisions', '{}');
 
-                        listInput.style.display = 'block';
-                        startBtn.style.display = 'block';
-                        if (detectIDsBtn) detectIDsBtn.style.display = 'block';
+                        document.getElementById('studyControls').style.display = 'none';
                         controls.style.display = 'none';
                         listInput.value = '';
                         document.getElementById("topRightIcons").style.display = "none";
@@ -379,6 +350,8 @@ progressInline.textContent = `${counted} of ${studies.length} studies done`;
             }
         }
 resetBtn.onclick = function() {
+            document.getElementById('studyListInput').disabled = false;
+            document.getElementById('startBtn').disabled = false;
             GM_setValue('studyList', '');
             GM_setValue('studyIndex', 0);
             GM_setValue('decisions', '{}');
@@ -417,7 +390,7 @@ resetBtn.onclick = function() {
         });
 
 
-        const addKeywordsBtn = panel.querySelector('#addKeywordsBtn');
+        const searchKeywordBtn = panel.querySelector('#searchKeywordBtn');
         const keywordTags = panel.querySelector('#keywordTags');
         const savedTags = JSON.parse(GM_getValue('keywordTags', '[]'));
         renderKeywordTags(savedTags);
@@ -490,7 +463,7 @@ resetBtn.onclick = function() {
         }
 
 
-        addKeywordsBtn.onclick = () => {
+        searchKeywordBtn.onclick = () => {
             const raw = keywordInput.value.trim();
             if (!raw) return;
 
@@ -594,17 +567,6 @@ resetBtn.onclick = function() {
                 }
 
                 // ⏱️ Delay popup so the UI visibly updates first
-
-                // ✅ Update progress bar before final popup
-                const counted = studies.filter(id => ["Yes", "No", "Maybe", "Skipped"].includes(decisions[id])).length;
-                const progress = Math.round((counted / studies.length) * 100);
-                if (progressBar && studies.length > 0) {
-                    progressBar.style.width = progress + '%';
-                }
-                if (progressInline) {
-                    progressInline.textContent = `${counted} of ${studies.length} studies done`;
-                }
-if (progressInline) progressInline.textContent = `(${counted} of ${studies.length} done)`;
                 setTimeout(() => {
                     alert("You've reached the end of your study list!");
 
@@ -627,31 +589,9 @@ if (progressInline) progressInline.textContent = `(${counted} of ${studies.lengt
 
                     if (panel) {
                         const listInput = panel.querySelector('#studyListInput');
-        let detectIDsBtn;
-
-        // ✅ Add detect visible study IDs button (only on front panel)
-        detectIDsBtn = document.createElement("button");
-        detectIDsBtn.textContent = "📋 Detect Visible Study IDs";
-        detectIDsBtn.style.marginTop = "6px";
-        detectIDsBtn.style.width = "100%";
-        listInput.insertAdjacentElement("afterend", detectIDsBtn);
-
-        detectIDsBtn.onclick = () => {
-            const matches = document.body.innerText.match(/#\d+/g) || [];
-            const uniqueIDs = [...new Set(matches.map(x => x.replace('#', '')))];
-            if (uniqueIDs.length) {
-                listInput.value = uniqueIDs.join(', ');
-                alert(`✅ Detected ${uniqueIDs.length} unique study IDs.`);
-            } else {
-                alert("No visible study IDs found on this page.");
-            }
-        };
-
                         const startBtn = panel.querySelector('#startBtn');
                         const controls = panel.querySelector('#studyControls');
-                        listInput.style.display = 'block';
-                        startBtn.style.display = 'block';
-                        if (detectIDsBtn) detectIDsBtn.style.display = 'block';
+                        document.getElementById('studyControls').style.display = 'none';
                         controls.style.display = 'none';
                         listInput.value = '';
                         document.getElementById("topRightIcons").style.display = "none";

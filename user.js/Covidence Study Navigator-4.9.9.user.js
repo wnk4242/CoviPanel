@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Covidence Study Navigator
 // @namespace    http://tampermonkey.net/
-// @version      4.6
+// @version      4.9.9
 // @description  Draggable Covidence panel with saved position, decision logging, CSV export, color-coded decision display.
 // @match        *://*.covidence.org/*
 // @grant        GM_setValue
@@ -9,10 +9,68 @@
 // ==/UserScript==
 
 (function() {
+    let lastVotedStudy = null;
     'use strict';
     if (window.top !== window.self) return;
 
-    function createPanel() {
+
+    const LEVELS = [
+    { threshold: 5, title: "Research Assistant I", emoji: "⭐" },
+    { threshold: 10, title: "Research Assistant II", emoji: "⭐" },
+    { threshold: 15, title: "PhD Student 1 Yr.", emoji: "🎓" },
+    { threshold: 20, title: "PhD Student 4 Yr.", emoji: "🎓" },
+    { threshold: 25, title: "PhD Candidate", emoji: "🎓" },
+    { threshold: 30, title: "PhD", emoji: "🎓" },
+    { threshold: 35, title: "Postdoc 1 Yr.", emoji: "📘" },
+    { threshold: 40, title: "Postdoc 9 Yr.", emoji: "📘" },
+    { threshold: 45, title: "Assistant Prof.", emoji: "🏅" },
+    { threshold: 50, title: "Associate Prof.", emoji: "🏅" },
+    { threshold: 55, title: "Professor", emoji: "🏅" },
+    { threshold: 60, title: "Distinguished Scholar", emoji: "🏆" }
+];
+
+    function updateLifetimeProgressUI() {
+        const count = parseInt(GM_getValue("totalStudiesScreened", "0"), 10);
+        const bar = document.getElementById("lifetimeProgressBar");
+        const text = document.getElementById("lifetimeProgressText");
+        const display = document.getElementById("achievementDisplay");
+
+        let current = LEVELS.find(lvl => count < lvl.threshold) || LEVELS[LEVELS.length - 1];
+        let max = current.threshold;
+        let percent = Math.min(100, Math.round((count / max) * 100));
+
+        if (bar) bar.style.width = percent + "%";
+        if (text) text.textContent = `${count} / ${max} Studies`;
+
+        if (display) {
+    display.innerHTML = "";
+    const levelIndex = LEVELS.findIndex(lvl => count < lvl.threshold);
+    const currentLevel = levelIndex === -1 ? LEVELS[LEVELS.length - 1] : LEVELS[levelIndex - 1] || LEVELS[0];
+    const nextLevel = LEVELS[levelIndex] || currentLevel;
+    const div = document.createElement("div");
+    div.innerHTML = `<span style="font-size: 13px;">${currentLevel.emoji} Level ${levelIndex} → ${levelIndex + 1} <strong>${nextLevel.title}</strong></span>`;
+    display.appendChild(div);
+        }
+        }
+     function createLevelProgressUI(parent) {
+        const container = document.createElement("div");
+        container.id = "lifetimeProgressContainer";
+        container.style.margin = "14px 0 8px 0";
+        container.innerHTML = `
+            <div style="font-weight:bold; font-size:13px; margin-bottom:4px; display: flex; justify-content: space-between; align-items: center;">
+                <span>Your Screening Journey</span>
+                <button id="resetProgressBtn" title="Reset progress" style="background: none; border: none; cursor: pointer; font-size: 14px; color: #888;">🔄</button>
+            </div>
+            <div style="height: 8px; background: #ddd; border-radius: 4px; margin-bottom: 4px;">
+                <div id="lifetimeProgressBar" style="height: 100%; width: 0%; background: #2196F3; border-radius: 4px;"></div>
+            </div>
+            <div id="lifetimeProgressText" style="font-size: 12px; margin-bottom: 6px;">0 / 5</div>
+            <div id="achievementDisplay" style="font-size: 12px; display: flex; flex-direction: column; gap: 2px;"></div>
+        `;
+        parent.insertBefore(container, parent.firstChild);
+        updateLifetimeProgressUI();
+    }
+ function createPanel() {
         if (document.getElementById("covidence-panel")) return;
 
         const panel = document.createElement("div");
@@ -181,6 +239,7 @@
             startBtn.style.display = 'none';
             if (detectIDsBtn) detectIDsBtn.style.display = 'none';
             controls.style.display = 'block';
+            // moved to summaryList
             document.getElementById("topRightIcons").style.display = "flex";
             const visible = GM_getValue('summaryVisible', false);
             summaryList.style.display = visible ? 'block' : 'none';
@@ -217,6 +276,7 @@
             startBtn.style.display = 'none';
             if (detectIDsBtn) detectIDsBtn.style.display = 'none';
             controls.style.display = 'block';
+            // moved to summaryList
             document.getElementById("topRightIcons").style.display = "flex";
             updateStudy();
             setTimeout(simulateEnter, 300);
@@ -238,6 +298,10 @@
                 GM_setValue('studyIndex', index);
                 attachDecisionListeners();
                 updateSummary();
+            createLevelProgressUI(summaryList);
+            summaryList.insertAdjacentHTML('beforeend', `
+
+`);
                 updatePanelDecisionButtonsState();
                 setTimeout(updatePanelDecisionButtonsState, 300);
                 const counted = studies.filter(id => ["Yes", "No", "Maybe", "Skipped"].includes(decisions[id])).length;
@@ -259,16 +323,37 @@ if (progressInline) progressInline.textContent = `(${counted} of ${studies.lengt
                     btn.addEventListener("click", () => {
                         if (window.__fromPanel) return;
                         const currentID = studies[index];
+                        if (lastVotedStudy === currentID) return;
+                        lastVotedStudy = currentID;
+
                         decisions[currentID] = value;
                         GM_setValue("decisions", JSON.stringify(decisions));
+
+
                         currentDisplay.textContent = `#${currentID}`;
                         updateSummary();
+            createLevelProgressUI(summaryList);
+            summaryList.insertAdjacentHTML('beforeend', `
+
+`);
                         updatePanelDecisionButtonsState();
                 setTimeout(updatePanelDecisionButtonsState, 300);
                     });
                 }
             });
         }
+
+
+
+        summaryList.addEventListener('click', function(e) {
+            if (e.target.id === 'resetProgressBtn') {
+                if (confirm('Reset your lifetime progress?')) {
+                    GM_setValue("totalStudiesScreened", "0");
+                    updateLifetimeProgressUI();
+                }
+            }
+        });
+
 
         function updateSummary() {
             const maybeList = studies.filter(id => decisions[id] === "Maybe");
@@ -279,7 +364,8 @@ if (progressInline) progressInline.textContent = `(${counted} of ${studies.lengt
                 return ids.map(id => `<span style="color:${color};">${id}</span>`).join(', ');
             }
 
-            summaryList.innerHTML =
+            summaryList.innerHTML = `<div style="margin-bottom: 10px;"></div>` +
+
                 `<strong style="color:orange;">Maybe:</strong> ${makeColoredList(maybeList, 'orange')}<br>
      <strong style="color:green;">Yes:</strong> ${makeColoredList(yesList, 'green')}<br>
      <strong style="color:red;">No:</strong> ${makeColoredList(noList, 'red')}`;
@@ -308,8 +394,17 @@ if (progressInline) progressInline.textContent = `(${counted} of ${studies.lengt
             const currentID = studies[index];
             decisions[currentID] = value;
             GM_setValue("decisions", JSON.stringify(decisions));
+            const totalKey = "totalStudiesScreened";
+            const prev = parseInt(GM_getValue(totalKey, "0"), 10);
+            GM_setValue(totalKey, (prev + 1).toString());
+            updateLifetimeProgressUI();
+
             currentDisplay.textContent = `#${currentID}`;
             updateSummary();
+            createLevelProgressUI(summaryList);
+            summaryList.insertAdjacentHTML('beforeend', `
+
+`);
             updatePanelDecisionButtonsState();
 
             const button = document.querySelector(`button.vote-option[value="${value}"]`);
@@ -341,6 +436,10 @@ progressInline.textContent = `${counted} of ${studies.length} studies done`;
 
                 if (allFinished) {
                     updateSummary();
+            createLevelProgressUI(summaryList);
+            summaryList.insertAdjacentHTML('beforeend', `
+
+`);
 
                     if (progressInline) progressInline.textContent = `(${counted} of ${studies.length} done)`;
                     setTimeout(() => {
@@ -540,15 +639,20 @@ resetBtn.onclick = function() {
         }
 
     }
-
-    window.addEventListener('load', () => {
+   window.addEventListener('load', () => {
         setTimeout(createPanel, 5);
     });
 
-    // ✅ Automatically click "Next" after built-in button — unless triggered from panel
+
+
+
+        // ✅ Automatically click "Next" after built-in button — unless triggered from panel
     document.body.addEventListener("click", function(e) {
         const voteBtn = e.target.closest("button.vote-option");
         if (voteBtn && ["Yes", "No", "Maybe"].includes(voteBtn.value)) {
+        let currentID = voteBtn?.closest("li")?.querySelector("span")?.textContent?.trim() || null;
+        if (currentID && lastVotedStudy === currentID) return;
+        lastVotedStudy = currentID;
         const panel = document.getElementById("covidence-panel");
         const studyControlsVisible = panel && panel.querySelector('#studyControls')?.style.display !== 'none';
         if (!studyControlsVisible) return;
@@ -559,10 +663,15 @@ resetBtn.onclick = function() {
             const decisions = JSON.parse(GM_getValue('decisions', '{}'));
             const studies = savedList.split(',').map(s => s.trim()).filter(Boolean);
 
-            const currentID = studies[savedIndex];
+           currentID = studies[savedIndex];
             if (currentID) {
                 decisions[currentID] = voteBtn.value;
                 GM_setValue("decisions", JSON.stringify(decisions));
+            const totalKey = "totalStudiesScreened";
+            const prev = parseInt(GM_getValue(totalKey, "0"), 10);
+            GM_setValue(totalKey, (prev + 1).toString());
+            updateLifetimeProgressUI();
+
             }
 
             const allFinished = studies.every(id =>
@@ -584,7 +693,8 @@ resetBtn.onclick = function() {
                     function makeColoredList(ids, color) {
                         return ids.map(id => `<span style="color:${color};">${id}</span>`).join(', ');
                     }
-                    summaryList.innerHTML =
+                    summaryList.innerHTML = `<div style="margin-bottom: 10px;"></div>` +
+
                         `<strong style="color:orange;">Maybe:</strong> ${makeColoredList(maybeList, 'orange')}<br>
              <strong style="color:green;">Yes:</strong> ${makeColoredList(yesList, 'green')}<br>
              <strong style="color:red;">No:</strong> ${makeColoredList(noList, 'red')}`;
@@ -605,6 +715,13 @@ resetBtn.onclick = function() {
                     progressInline.textContent = `${counted} of ${studies.length} studies done`;
                 }
 if (progressInline) progressInline.textContent = `(${counted} of ${studies.length} done)`;
+
+                // ✅ Synchronously force progress bar + trophy UI before alert
+const summaryList = document.querySelector('#summaryList');
+if (summaryList && !document.getElementById("lifetimeProgressContainer")) {
+    createLevelProgressUI(summaryList);
+}
+
                 setTimeout(() => {
                     alert("You've reached the end of your study list!");
 
@@ -672,6 +789,11 @@ if (progressInline) progressInline.textContent = `(${counted} of ${studies.lengt
                 if (!decisions[currentID]) {
                     decisions[currentID] = "Skipped";
                     GM_setValue("decisions", JSON.stringify(decisions));
+            const totalKey = "totalStudiesScreened";
+            const prev = parseInt(GM_getValue(totalKey, "0"), 10);
+            GM_setValue(totalKey, (prev + 1).toString());
+            updateLifetimeProgressUI();
+
                 }
 
                 const newIndex = savedIndex + 1;
@@ -689,6 +811,7 @@ if (progressInline) progressInline.textContent = `(${counted} of ${studies.lengt
             }
         }
     });
+
 
 
 })();

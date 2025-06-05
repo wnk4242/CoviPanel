@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Covidence Study Navigator
 // @namespace    http://tampermonkey.net/
-// @version      4.6
+// @version      4.7
 // @description  Draggable Covidence panel with saved position, decision logging, CSV export, color-coded decision display.
 // @match        *://*.covidence.org/*
 // @grant        GM_setValue
@@ -34,6 +34,8 @@
 
         panel.innerHTML = `
             <strong style="font-size: 15px;">Covidence Study Navigator</strong>
+<div id="badgeContainer" style="position:absolute; top:10px; right:50px; display:flex; gap:4px; font-size:16px;"></div>
+
             <div id="topRightIcons" style="position: absolute; top: 11px; right: 10px; display: none; gap: 7px; flex-direction: row;">
               <button id="exportBtn" title="Export decisions to .csv" style="background:none; border:none; cursor:pointer; font-size:22px;" aria-label="Export decisions to .csv">🖫</button>
               <button id="resetBtn" title="Start a new screening session" style="background:none; border:none; cursor:pointer; font-size:21px;" aria-label="Start a new screening session">⟳</button>
@@ -122,6 +124,32 @@
         const summaryList = panel.querySelector('#summaryList');
         const toggleSummaryBtn = panel.querySelector('#toggleSummaryBtn');
         const skipBtn = panel.querySelector('#skipBtn');
+
+        const badgeContainer = panel.querySelector('#badgeContainer');
+        const milestoneMap = { 25: "🎖️", 50: "🏅", 75: "🥈", 100: "🥇" };
+
+        function renderBadges() {
+            const unlocked = JSON.parse(GM_getValue('unlockedBadges', '[]'));
+            badgeContainer.innerHTML = '';
+            unlocked.forEach(b => {
+                const badge = document.createElement('span');
+                badge.textContent = b;
+                badgeContainer.appendChild(badge);
+            });
+        }
+        renderBadges();
+
+        function checkAndUnlockBadge(progress) {
+            const unlocked = new Set(JSON.parse(GM_getValue('unlockedBadges', '[]')));
+            for (const [threshold, symbol] of Object.entries(milestoneMap)) {
+                if (progress >= threshold && !unlocked.has(symbol)) {
+                    unlocked.add(symbol);
+                }
+            }
+            GM_setValue('unlockedBadges', JSON.stringify([...unlocked]));
+            renderBadges();
+        }
+
 
         function simulateEnter() {
             const searchBox = document.querySelector("input[placeholder='Search studies']");
@@ -244,6 +272,7 @@
 const progress = Math.round((counted / studies.length) * 100);
 if (progressBar && studies.length > 0) {
     progressBar.style.width = progress + '%';
+checkAndUnlockBadge(progress);
 }
 if (progressInline) progressInline.textContent = `(${counted} of ${studies.length} done)`;
 
@@ -336,6 +365,7 @@ if (progressInline) progressInline.textContent = `(${counted} of ${studies.lengt
 const counted = studies.filter(id => ["Yes", "No", "Maybe", "Skipped"].includes(decisions[id])).length;
 const progress = Math.round((counted / studies.length) * 100);
 progressBar.style.width = progress + '%';
+checkAndUnlockBadge(progress);
 progressInline.textContent = `${counted} of ${studies.length} studies done`;
 
 
@@ -360,6 +390,7 @@ progressInline.textContent = `${counted} of ${studies.length} studies done`;
                         GM_setValue('studyList', '');
                         GM_setValue('studyIndex', 0);
                         GM_setValue('decisions', '{}');
+    GM_setValue('unlockedBadges', '[]');
 
                         listInput.style.display = 'block';
                         startBtn.style.display = 'block';
@@ -382,6 +413,7 @@ resetBtn.onclick = function() {
             GM_setValue('studyList', '');
             GM_setValue('studyIndex', 0);
             GM_setValue('decisions', '{}');
+    GM_setValue('unlockedBadges', '[]');
             location.reload();
         };
 
@@ -578,6 +610,32 @@ resetBtn.onclick = function() {
                     const summaryList = panel.querySelector('#summaryList');
                     const toggleSummaryBtn = panel.querySelector('#toggleSummaryBtn');
         const skipBtn = panel.querySelector('#skipBtn');
+
+        const badgeContainer = panel.querySelector('#badgeContainer');
+        const milestoneMap = { 25: "🎖️", 50: "🏅", 75: "🥈", 100: "🥇" };
+
+        function renderBadges() {
+            const unlocked = JSON.parse(GM_getValue('unlockedBadges', '[]'));
+            badgeContainer.innerHTML = '';
+            unlocked.forEach(b => {
+                const badge = document.createElement('span');
+                badge.textContent = b;
+                badgeContainer.appendChild(badge);
+            });
+        }
+        renderBadges();
+
+        function checkAndUnlockBadge(progress) {
+            const unlocked = new Set(JSON.parse(GM_getValue('unlockedBadges', '[]')));
+            for (const [threshold, symbol] of Object.entries(milestoneMap)) {
+                if (progress >= threshold && !unlocked.has(symbol)) {
+                    unlocked.add(symbol);
+                }
+            }
+            GM_setValue('unlockedBadges', JSON.stringify([...unlocked]));
+            renderBadges();
+        }
+
                     const maybeList = studies.filter(id => decisions[id] === "Maybe");
                     const yesList = studies.filter(id => decisions[id] === "Yes");
                     const noList = studies.filter(id => decisions[id] === "No");
@@ -600,6 +658,7 @@ resetBtn.onclick = function() {
                 const progress = Math.round((counted / studies.length) * 100);
                 if (progressBar && studies.length > 0) {
                     progressBar.style.width = progress + '%';
+checkAndUnlockBadge(progress);
                 }
                 if (progressInline) {
                     progressInline.textContent = `${counted} of ${studies.length} studies done`;
@@ -624,6 +683,7 @@ if (progressInline) progressInline.textContent = `(${counted} of ${studies.lengt
                     GM_setValue('studyList', '');
                     GM_setValue('studyIndex', 0);
                     GM_setValue('decisions', '{}');
+    GM_setValue('unlockedBadges', '[]');
 
                     if (panel) {
                         const listInput = panel.querySelector('#studyListInput');

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Covidence Study Navigator
 // @namespace    http://tampermonkey.net/
-// @version      4.6
+// @version      4.9
 // @description  Draggable Covidence panel with saved position, decision logging, CSV export, color-coded decision display.
 // @match        *://*.covidence.org/*
 // @grant        GM_setValue
@@ -11,6 +11,56 @@
 (function() {
     'use strict';
     if (window.top !== window.self) return;
+
+
+    const LEVELS = [
+        { threshold: 5, title: "Primary School Student", emoji: "🏆" },
+        { threshold: 10, title: "Junior High Student", emoji: "🏆" },
+        { threshold: 15, title: "High School Student", emoji: "🏆" },
+        { threshold: 20, title: "College Student", emoji: "🏆" }
+    ];
+
+    function updateLifetimeProgressUI() {
+        const count = parseInt(GM_getValue("totalStudiesScreened", "0"), 10);
+        const bar = document.getElementById("lifetimeProgressBar");
+        const text = document.getElementById("lifetimeProgressText");
+        const display = document.getElementById("achievementDisplay");
+
+        let current = LEVELS.find(lvl => count < lvl.threshold) || LEVELS[LEVELS.length - 1];
+        let max = current.threshold;
+        let percent = Math.min(100, Math.round((count / max) * 100));
+
+        if (bar) bar.style.width = percent + "%";
+        if (text) text.textContent = `${Math.min(count, max)} / ${max}`;
+
+        if (display) {
+            display.innerHTML = "";
+            LEVELS.forEach(lvl => {
+                if (count >= lvl.threshold) {
+                    const div = document.createElement("div");
+                    div.textContent = `${lvl.emoji} ${lvl.title}`;
+                    display.appendChild(div);
+                }
+            });
+        }
+    }
+
+    function createLevelProgressUI(parent) {
+        const container = document.createElement("div");
+        container.id = "lifetimeProgressContainer";
+        container.style.margin = "14px 0 8px 0";
+        container.innerHTML = `
+            <div style="font-weight:bold; font-size:13px; margin-bottom:4px;">Your Screening Journey</div>
+            <div style="height: 8px; background: #ddd; border-radius: 4px; margin-bottom: 4px;">
+                <div id="lifetimeProgressBar" style="height: 100%; width: 0%; background: #2196F3; border-radius: 4px;"></div>
+            </div>
+            <div id="lifetimeProgressText" style="font-size: 12px; margin-bottom: 6px;">0 / 5</div>
+            <div id="achievementDisplay" style="font-size: 12px; display: flex; flex-direction: column; gap: 2px;"></div>
+        `;
+        parent.insertBefore(container, parent.firstChild);
+        updateLifetimeProgressUI();
+    }
+
 
     function createPanel() {
         if (document.getElementById("covidence-panel")) return;
@@ -181,6 +231,7 @@
             startBtn.style.display = 'none';
             if (detectIDsBtn) detectIDsBtn.style.display = 'none';
             controls.style.display = 'block';
+            createLevelProgressUI(controls);
             document.getElementById("topRightIcons").style.display = "flex";
             const visible = GM_getValue('summaryVisible', false);
             summaryList.style.display = visible ? 'block' : 'none';
@@ -217,6 +268,7 @@
             startBtn.style.display = 'none';
             if (detectIDsBtn) detectIDsBtn.style.display = 'none';
             controls.style.display = 'block';
+            createLevelProgressUI(controls);
             document.getElementById("topRightIcons").style.display = "flex";
             updateStudy();
             setTimeout(simulateEnter, 300);
@@ -261,6 +313,11 @@ if (progressInline) progressInline.textContent = `(${counted} of ${studies.lengt
                         const currentID = studies[index];
                         decisions[currentID] = value;
                         GM_setValue("decisions", JSON.stringify(decisions));
+            const totalKey = "totalStudiesScreened";
+            const prev = parseInt(GM_getValue(totalKey, "0"), 10);
+            GM_setValue(totalKey, (prev + 1).toString());
+            updateLifetimeProgressUI();
+
                         currentDisplay.textContent = `#${currentID}`;
                         updateSummary();
                         updatePanelDecisionButtonsState();
@@ -308,6 +365,11 @@ if (progressInline) progressInline.textContent = `(${counted} of ${studies.lengt
             const currentID = studies[index];
             decisions[currentID] = value;
             GM_setValue("decisions", JSON.stringify(decisions));
+            const totalKey = "totalStudiesScreened";
+            const prev = parseInt(GM_getValue(totalKey, "0"), 10);
+            GM_setValue(totalKey, (prev + 1).toString());
+            updateLifetimeProgressUI();
+
             currentDisplay.textContent = `#${currentID}`;
             updateSummary();
             updatePanelDecisionButtonsState();
@@ -563,6 +625,11 @@ resetBtn.onclick = function() {
             if (currentID) {
                 decisions[currentID] = voteBtn.value;
                 GM_setValue("decisions", JSON.stringify(decisions));
+            const totalKey = "totalStudiesScreened";
+            const prev = parseInt(GM_getValue(totalKey, "0"), 10);
+            GM_setValue(totalKey, (prev + 1).toString());
+            updateLifetimeProgressUI();
+
             }
 
             const allFinished = studies.every(id =>
@@ -672,6 +739,11 @@ if (progressInline) progressInline.textContent = `(${counted} of ${studies.lengt
                 if (!decisions[currentID]) {
                     decisions[currentID] = "Skipped";
                     GM_setValue("decisions", JSON.stringify(decisions));
+            const totalKey = "totalStudiesScreened";
+            const prev = parseInt(GM_getValue(totalKey, "0"), 10);
+            GM_setValue(totalKey, (prev + 1).toString());
+            updateLifetimeProgressUI();
+
                 }
 
                 const newIndex = savedIndex + 1;
