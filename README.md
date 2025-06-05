@@ -14,6 +14,19 @@ And, yes, you can customize the buttons!
   <img src="ui/snoopy5s.gif" width="200" style="margin-left: 20px;" />
 </p>
 
+## Tutorial
+
+To get started with CoviPanel, follow the two-step tutorial below:
+
+1. **[Install Tampermonkey and Activate CoviPanel](https://github.com/wnk4242/CoviPanel/wiki/Install-Tampermonkey-and-activate-CoviPanel)**  
+   Learn how to install the Tampermonkey extension and load the CoviPanel userscript into your browser.
+
+2. **[Generate API Key and Activate AI Assistant](https://github.com/wnk4242/CoviPanel/wiki/Generate-API-Key-and-Activate-AI-Assistant)**  
+   Set up your OpenAI API key and enable the built-in AI assistant to help you screen abstracts.
+
+Make sure to complete both steps to fully unlock CoviPanel’s AI-enhanced features.
+
+
 ## Key Features
 - **Flexible, layered interface**
 CoviPanel's layered layout lets you expand or collapse individual sections depending on what you need at the moment. Whether you want a clean, minimal view or full access to detailed tools, the interface adapts to your workflow without getting in the way.
