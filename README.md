@@ -23,8 +23,13 @@ To get started with CoviPanel, follow the two-step tutorial below:
 
 2. **[Generate API key and activate AI Assistant](https://github.com/wnk4242/CoviPanel/wiki/Generate-API-Key-and-Activate-AI-Assistant)**  
    Learn how to set up your OpenAI API key and enable the AI Assistant to help you screen abstracts.
+   
+3. **[Select studies to start screening](https://github.com/wnk4242/CoviPanel/wiki/Select-studies-to-start-screening)**  
+   Learn how to enter study IDs to begin screening with CoviPanel.
 
-Make sure to complete both steps to fully unlock CoviPanel’s AI-enhanced features.
+4. **[Two most important buttons on CoviPanel: 🖫 (Export) and ◉ (Return)](https://github.com/wnk4242/CoviPanel/wiki/Two-most-important-buttons-on-CoviPanel:-%F0%9F%96%AB-(Export)-and-%E2%97%89-(Return))**  
+   Learn how to export decisions to CSV, restart a screening session, and return to the study you were screening.
+
 
 
 ## Key Features
