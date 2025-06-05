@@ -48,7 +48,7 @@ CoviPanel is especially useful when you're assigned a specific subset of studies
 <!-- 
 <hr style="border: none; border-top: 1px solid #ccc; margin: 30px auto;" />
 <p align="center">
- <img src="ui/navigation3excel.gif" width="560" style="margin-left: 20px;" />
+ <img src="ui/navi3excel.gif" width="560" style="margin-left: 20px;" />
 </p>
 -->
 
