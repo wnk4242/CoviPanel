@@ -19,16 +19,16 @@ And, yes, you can customize the buttons!
 To get started with CoviPanel, follow the brief tutorials below:
 
 1. **[Install and activate CoviPanel](https://github.com/wnk4242/CoviPanel/wiki/Install-Tampermonkey-and-activate-CoviPanel)**  
-   Learn how to install Tampermonkey and get started with CoviPanel for your Covidence projects in 7 steps (27 seconds).
+   Learn how to install Tampermonkey and get started with CoviPanel for your Covidence projects in <ins>7 steps (27 seconds)</ins>.
 
 2. **[Generate API key and activate AI Assistant](https://github.com/wnk4242/CoviPanel/wiki/Generate-API-Key-and-Activate-AI-Assistant)**  
-   Learn how to set up your OpenAI API key and enable the AI Assistant to help you screen abstracts in 12 steps (54 seconds).
+   Learn how to set up your OpenAI API key and enable the AI Assistant to help you screen abstracts in <ins>12 steps (54 seconds)</ins>.
    
 3. **[Select studies to start screening](https://github.com/wnk4242/CoviPanel/wiki/Select-studies-to-start-screening)**  
-   Learn how to enter study IDs to begin screening with CoviPanel in 5 steps (32 seconds).
+   Learn how to enter study IDs to begin screening with CoviPanel in <ins>5 steps (32 seconds)</ins>.
 
 4. **[Two most important navigation buttons on CoviPanel: 🖫 (Export and restart) and ◉ (Return)](https://github.com/wnk4242/CoviPanel/wiki/Two-most-important-buttons-on-CoviPanel:-%F0%9F%96%AB-(Export)-and-%E2%97%89-(Return))**  
-   Learn how to export decisions to CSV, restart a screening session, and return to the study you were screening in 3 steps (45 seconds).
+   Learn how to export decisions to CSV, restart a screening session, and return to the study you were screening in <ins>3 steps (45 seconds)</ins>.
 
 
 
