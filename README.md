@@ -22,7 +22,8 @@ CoviPanel's layered layout lets you expand or collapse individual sections depen
 </p>
 
 - **Streamlined navigation**  
-  No more scrolling through pages to find your studies. CoviPanel can detect unscreened studies with one click or let you paste a list of study IDs directly from Excel. It then guides you through them one by one in a focused, controlled sequence.
+CoviPanel is especially useful when you're assigned a specific subset of studies to screen (e.g., imagine you're responsible for screening studies #500 to #900). It lets you paste a list of study IDs directly from Excel and then guides you through them one by one—no more scrolling through pages to find your studies.
+
 <p align="center">
  <img src="ui/navigation3.gif" width="560" style="margin-left: 20px;" />
 </p>
@@ -34,10 +35,13 @@ CoviPanel's layered layout lets you expand or collapse individual sections depen
 -->
 
 - **Progress tracking and academic-style gamification**  
-  Watch your progress build over time. As you screen, you’ll climb through academic ranks‍—from Research Assistant 🤦‍ to Postdoc 🧔 and eventually reach Full Professor 🧙‍—a small reward system to keep momentum going during long review sessions.
+  Watch your progress build over time. As you screen, you’ll climb through academic ranks‍—from Research Assistant 🤦‍♂️‍ to Postdoc 🧐 and eventually reach Full Professor 🧙‍—a small reward system to keep momentum going during long review sessions.
+<p align="center">
+ <img src="ui/rank.png" width="600" style="margin-left: 20px;" />
+</p>
 
+<!-- 
 <div align="center">
-
 | Level | #Papers Screened | Title                | Emoji | Description                          |
 |-------|------------------|----------------------|--------|--------------------------------------|
 | 1     | 0                | Research Assistant I | 🤦‍♂️   | Doesn't understand research at all.  |
@@ -52,9 +56,8 @@ CoviPanel's layered layout lets you expand or collapse individual sections depen
 | 10    | 800              | Associate Prof.      | 🦹‍♂️   | Master of committees.                |
 | 11    | 900              | Professor            | 🧙‍♂️   | Wizard of academia.                  |
 | 12    | 1000             | Emeritus Prof.       | 🥂     | Retired. Toasting to freedom.        |
-
 </div>
-
+-->
 
 
 - **AI-assisted screening (OpenAI API key required)**  
