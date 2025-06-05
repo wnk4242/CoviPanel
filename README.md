@@ -111,5 +111,7 @@ CoviPanel is especially useful when you're assigned a specific subset of studies
   All your decisions (and ChatGPT's, if enabled) are saved automatically. You can export them at any time in a clean CSV format for record-keeping or analysis.
 
 <p align="center">
- <img src="ui/trackdecision.png" width="300" style="margin-left: 20px;" />
+ <img src="ui/trackdecision.png" width="280" style="margin-left: 20px;" />
+ 
+ <img src="ui/csvreport.png" width="450" style="margin-left: 20px;" /> 
 </p>
