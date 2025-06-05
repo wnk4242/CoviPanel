@@ -16,7 +16,7 @@ And, yes, you can customize the buttons!
 
 ## Tutorial
 
-To get started with CoviPanel, follow the tutorial below:
+To get started with CoviPanel, follow the tutorials below:
 
 1. **[Install and activate CoviPanel](https://github.com/wnk4242/CoviPanel/wiki/Install-Tampermonkey-and-activate-CoviPanel)**  
    Learn how to install Tampermonkey and get started with CoviPanel for your Covidence projects.
