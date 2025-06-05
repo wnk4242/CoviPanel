@@ -1,6 +1,6 @@
 # CoviPanel: A Simple, Gamified, AI-Assisted Tool for Systematic Review
 
-**CoviPanel** is a powerful browser extension (Tampermonkey userscript) built for researchers who have to screen hundreds, or perhaps thousands, of references for systematic reviews on Covidence. Designed to streamline the most time-consuming part of the paper review process (title and abstract screen), CoviPanel transforms screening from a repetitive task into a faster, smarter, and even slightly more enjoyable one.
+**CoviPanel** is a powerful browser extension built for researchers who have to screen hundreds, or perhaps thousands, of references for systematic reviews on Covidence. Designed to streamline one of the most time-consuming parts of the systematic review process‍—title and abstract screen—CoviPanel transforms screening from a repetitive task into a faster, smarter, and even slightly more enjoyable one.
 
 Whether you're reviewing tens, hundreds, or even thousands of abstracts, CoviPanel helps you stay focused, work faster, and make more consistent decisions. It combines simplified navigation, real-time progress tracking, and strong AI support—all within a clean, thoughtfully designed, floating panel that stays with you while you work.
 <!-- 
@@ -16,9 +16,9 @@ And, yes, you can customize the buttons!
 
 ## Tutorial
 
-To get started with CoviPanel, follow the two-step tutorial below:
+To get started with CoviPanel, follow the tutorial below:
 
-1. **[Install Tampermonkey and activate CoviPanel](https://github.com/wnk4242/CoviPanel/wiki/Install-Tampermonkey-and-activate-CoviPanel)**  
+1. **[Install and activate CoviPanel](https://github.com/wnk4242/CoviPanel/wiki/Install-Tampermonkey-and-activate-CoviPanel)**  
    Learn how to install Tampermonkey and get started with CoviPanel for your Covidence projects.
 
 2. **[Generate API key and activate AI Assistant](https://github.com/wnk4242/CoviPanel/wiki/Generate-API-Key-and-Activate-AI-Assistant)**  
@@ -27,7 +27,7 @@ To get started with CoviPanel, follow the two-step tutorial below:
 3. **[Select studies to start screening](https://github.com/wnk4242/CoviPanel/wiki/Select-studies-to-start-screening)**  
    Learn how to enter study IDs to begin screening with CoviPanel.
 
-4. **[Two most important buttons on CoviPanel: 🖫 (Export) and ◉ (Return)](https://github.com/wnk4242/CoviPanel/wiki/Two-most-important-buttons-on-CoviPanel:-%F0%9F%96%AB-(Export)-and-%E2%97%89-(Return))**  
+4. **[Two most important navigation buttons on CoviPanel: 🖫 (Export and restart) and ◉ (Return)](https://github.com/wnk4242/CoviPanel/wiki/Two-most-important-buttons-on-CoviPanel:-%F0%9F%96%AB-(Export)-and-%E2%97%89-(Return))**  
    Learn how to export decisions to CSV, restart a screening session, and return to the study you were screening.
 
 
