@@ -27,7 +27,7 @@ To get started with CoviPanel, follow the brief tutorials below:
 3. **[Select studies to start screening (5 steps, 32 seconds)](https://github.com/wnk4242/CoviPanel/wiki/Select-studies-to-start-screening)**  
    Learn how to enter study IDs to begin screening with CoviPanel.
 
-4. **[Simple navigation: 🖫 (Export and restart) and ◉ (Return) (3 steps, 45 seconds)](https://github.com/wnk4242/CoviPanel/wiki/Two-most-important-buttons-on-CoviPanel:-%F0%9F%96%AB-(Export)-and-%E2%97%89-(Return))**  
+4. **[Simple navigation: 🖫 (Export and restart) and ◉ (Return) (3 steps, 45 seconds)](https://github.com/wnk4242/CoviPanel/wiki/Simple-navigation:-%F0%9F%96%AB-(Export-and-restart)-and-%E2%97%89-(Return)-(IMPORTANT))**  
    Learn how to export decisions to CSV, restart a screening session, and return to the study you were screening.
 
 
