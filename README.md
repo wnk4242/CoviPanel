@@ -53,7 +53,7 @@ CoviPanel is especially useful when you're assigned a specific subset of studies
 -->
 
 - **Progress tracking and academic-style gamification**  
-  Watch your progress build over time. As you screen, you’ll climb through academic ranks‍—from Research Assistant 🤦‍♂️‍ to Postdoc 🧐 and eventually reach Full Professor 🧙‍—a lightweight yet thoughtfully designed reward system to keep momentum going during long review sessions.
+  Watch your progress build over time. As you screen more, you’ll level up through academic ranks‍—from a lowly Research Assistant 🤦‍♂️‍ to a desperate Postdoc 🧐 and eventually become a distinguished Professor 🧙‍—a lightweight yet thoughtfully designed reward system to keep momentum going during long review sessions.
 <p align="center">
  <img src="ui/rank.png" width="600" style="margin-left: 20px;" />
 </p>
