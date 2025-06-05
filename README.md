@@ -43,12 +43,12 @@ CoviPanel's layered layout lets you expand or collapse individual sections depen
 CoviPanel is especially useful when you're assigned a specific subset of studies to screen (e.g., imagine you're responsible for screening studies #500 to #900). CoviPanel lets you paste a list of study IDs directly from Excel and then guides you through them one by one—no more scrolling through pages to find your studies.
 
 <p align="center">
- <img src="ui/navigation3.gif" width="560" style="margin-left: 20px;" />
+ <img src="ui/enterbyexcel.gif" width="600" style="margin-left: 20px;" />
 </p>
 <!-- 
 <hr style="border: none; border-top: 1px solid #ccc; margin: 30px auto;" />
 <p align="center">
- <img src="ui/navi3excel.gif" width="560" style="margin-left: 20px;" />
+ <img src="ui/navigation1.gif" width="560" style="margin-left: 20px;" />
 </p>
 -->
 
