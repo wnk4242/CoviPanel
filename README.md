@@ -18,11 +18,11 @@ And, yes, you can customize the buttons!
 
 To get started with CoviPanel, follow the two-step tutorial below:
 
-1. **[Install Tampermonkey and Activate CoviPanel](https://github.com/wnk4242/CoviPanel/wiki/Install-Tampermonkey-and-activate-CoviPanel)**  
-   Learn how to install the Tampermonkey extension and load the CoviPanel userscript into your browser.
+1. **[Install Tampermonkey and activate CoviPanel](https://github.com/wnk4242/CoviPanel/wiki/Install-Tampermonkey-and-activate-CoviPanel)**  
+   Learn how to install Tampermonkey and get started with CoviPanel for your Covidence projects.
 
-2. **[Generate API Key and Activate AI Assistant](https://github.com/wnk4242/CoviPanel/wiki/Generate-API-Key-and-Activate-AI-Assistant)**  
-   Set up your OpenAI API key and enable the built-in AI assistant to help you screen abstracts.
+2. **[Generate API key and activate AI Assistant](https://github.com/wnk4242/CoviPanel/wiki/Generate-API-Key-and-Activate-AI-Assistant)**  
+   Learn how to set up your OpenAI API key and enable the AI Assistant to help you screen abstracts.
 
 Make sure to complete both steps to fully unlock CoviPanel’s AI-enhanced features.
 
