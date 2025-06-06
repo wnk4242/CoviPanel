@@ -52,6 +52,13 @@ CoviPanel is especially useful when you're assigned a specific subset of studies
 </p>
 -->
 
+- **Keyword search and highlighting**  
+  You can search for multiple keywords in titles and abstracts and highlight them simultaneously. Frequently used keywords are saved, making repeated searches easier and faster.
+
+<p align="center">
+ <img src="ui/keywordsearch.png" width="700" style="margin-left: 20px;" />
+</p>
+
 - **Progress tracking and academic-style gamification**  
   Watch your progress build over time. As you screen more, you’ll level up through academic ranks‍—from a clueless Research Assistant 🤦‍♂️‍ to a overcaffeinated Postdoc 🧐 and eventually become a distinguished Professor 🧙‍—a lightweight yet thoughtfully designed reward system to keep momentum going during long review sessions.
 <p align="center">
@@ -91,14 +98,6 @@ CoviPanel is especially useful when you're assigned a specific subset of studies
 <p align="center">
  <img src="ui/pppmessage.png" width="600" style="margin-left: 20px;" />
 </p>
-
-- **Keyword search and highlighting**  
-  You can search for multiple keywords in titles and abstracts and highlight them simultaneously. Frequently used keywords are saved, making repeated searches easier and faster.
-
-<p align="center">
- <img src="ui/keywordsearch.png" width="700" style="margin-left: 20px;" />
-</p>
-
 
 - **Custom button appearance styling**  
   Want more personalized, visually appealing YES, NO, and MAYBE buttons? You can upload an image (JPG, PNG, or even GIF) to change the look of the decision buttons to your liking.
