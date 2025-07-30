@@ -30,6 +30,19 @@ To get started with CoviPanel, follow the brief tutorials below:
 4. **[Simple navigation: 🖫 (Export and restart) and ◉ (Return) (3 steps, read time: 45 seconds)](https://github.com/wnk4242/CoviPanel/wiki/Simple-navigation:-%F0%9F%96%AB-(Export-and-restart)-and-%E2%97%89-(Return)-(IMPORTANT))**  
    Learn how to export decisions to CSV, restart a screening session, and return to the study you were screening.
 
+## 📌 TIPS
+### 🔄 Restarting the Panel
+Sometimes you may enter studies that already have decisions, which will lead to the panel buttons being greyed out without any options to continue.  
+
+To return to the study selection screen:
+
+**👉 Press and hold the Save (🖫) button for about 1 seconds.**  A small menu will appear with the option **“Save and restart.”**
+
+Choosing this option will:
+- Export your current decisions to CSV  
+- Bring you back to the study selection panel to enter new study IDs
+
+This feature is the quickest way to restart the screening process without refreshing the page manually.
 
 
 ## Key Features
