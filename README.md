@@ -1,6 +1,6 @@
 # CoviPanel: A Simple, Gamified, AI-Assisted Tool for Conducting Systematic Reviews in Covidence
 
-**CoviPanel (Ver 1.0.1)** is a lightweight browser extension built for researchers who need to screen hundreds or perhaps thousands of references for systematic reviews on Covidence. Designed to streamline one of the most time-consuming parts of the systematic review process‍—title and abstract screen—CoviPanel transforms screening from a repetitive task into a faster, smarter and even a slightly more enjoyable one.
+**CoviPanel (Ver 1.0.1)** is a lightweight browser extension built for researchers who need to screen hundreds or perhaps thousands of references for systematic reviews on Covidence. Designed to streamline one of the most time-consuming parts of the systematic review process‍—title and abstract screening—CoviPanel transforms screening from a repetitive task into a faster, smarter and even a slightly more enjoyable one.
 
 Whether reviewing tens, hundreds or even thousands of abstracts, CoviPanel helps you to remain focused, work faster, and make more consistent decisions. It combines **simplified navigation**, **real-time progress tracking**, and **flexible AI support**—all within a clean, thoughtfully designed, floating panel that stays with you while you work.
 <!-- 
@@ -13,6 +13,8 @@ And, yes, you can customize the buttons!
   <img src="ui/water5s.gif" width="200" style="margin-left: 20px;" />
   <img src="ui/snoopy5s.gif" width="200" style="margin-left: 20px;" />
 </p>
+
+***This tool is specifically used for first-round title and abstract screening.**
 
 ## Tutorial
 
