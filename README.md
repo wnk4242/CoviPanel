@@ -14,7 +14,7 @@ And, yes, you can customize the buttons!
   <img src="ui/snoopy5s.gif" width="200" style="margin-left: 20px;" />
 </p>
 
-***This tool is specifically used for first-round title and abstract screening.**
+***Disclaimer: This tool is specifically designed for the first-round title and abstract screening.**
 
 ## Tutorial
 
